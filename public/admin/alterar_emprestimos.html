@@ -1,0 +1,43 @@
+
+<html><body>
+<div id='sidebar'></div>
+<h1>Alterar Empréstimos</h1>
+<div id='list'></div>
+<script>
+fetch('/admin/sidebar_admin.html').then(r=>r.text()).then(h=>sidebar.innerHTML=h);
+
+async function load(){
+  let emp = await fetch('/api/emprestimos').then(r=>r.json());
+  emp = emp.filter(e=>e.status=='Em análise');
+
+  let html = '<table><tr><th>ID</th><th>Usuário</th><th>Valor</th><th>Status</th><th>Ação</th></tr>';
+  emp.forEach(e=>{
+    html+=`<tr>
+      <td>${e.id}</td>
+      <td>${e.nome}</td>
+      <td>${e.valor}</td>
+      <td><select id='st${e.id}'>
+            <option>Em análise</option>
+            <option>Aprovado</option>
+            <option>Negado</option>
+          </select></td>
+      <td><button onclick='save(${e.id})'>Salvar</button></td>
+    </tr>`;
+  });
+  html+='</table>';
+  list.innerHTML=html;
+}
+
+async function save(id){
+  let st = document.getElementById('st'+id).value;
+  await fetch('/api/emprestimos/'+id,{
+    method:'PUT',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({status:st})
+  });
+  alert("Atualizado!");
+  load();
+}
+load();
+</script>
+</body></html>

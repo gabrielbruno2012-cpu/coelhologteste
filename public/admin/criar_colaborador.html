@@ -1,0 +1,29 @@
+
+<html><body>
+<div id='sidebar'></div>
+<h1>Criar Colaborador</h1>
+<form id='f'>
+Nome: <input id='nome'><br>
+Email: <input id='email'><br>
+Senha: <input id='senha'><br>
+Role: <input id='role' value='colaborador'><br>
+<button>Criar</button>
+</form>
+<div id='msg'></div>
+<script>
+fetch('/admin/sidebar_admin.html').then(r=>r.text()).then(h=>sidebar.innerHTML=h);
+
+f.onsubmit=async e=>{
+  e.preventDefault();
+  let body={
+    nome:nome.value,
+    email:email.value,
+    senha:senha.value,
+    role:role.value
+  };
+  let r = await fetch('/api/usuarios',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  let j = await r.json();
+  msg.innerText = j.error?'Erro: '+j.error:'Criado!';
+};
+</script>
+</body></html>

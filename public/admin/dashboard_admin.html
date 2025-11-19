@@ -1,0 +1,29 @@
+
+<html><body>
+<div id='sidebar'></div>
+<h1>Dashboard Admin</h1>
+<div id='cards'></div>
+<script>
+fetch('/admin/sidebar_admin.html').then(r=>r.text()).then(h=>sidebar.innerHTML=h);
+
+function fmt(n){return 'R$ '+Number(n||0).toLocaleString('pt-BR',{minimumFractionDigits:2});}
+
+async function load(){
+  let rec = await fetch('/api/recebiveis').then(r=>r.json());
+  let emp = await fetch('/api/emprestimos').then(r=>r.json());
+
+  let pendRec = rec.filter(r=>r.status=='Pendente')
+  let pagRec  = rec.filter(r=>r.status=='Pago')
+  let pendEmp = emp.filter(e=>e.status=='Em análise')
+  let aprEmp  = emp.filter(e=>e.status=='Aprovado')
+
+  cards.innerHTML = `
+    <p>Pendentes: ${fmt(pendRec.reduce((t,x)=>t+Number(x.valor),0))}</p>
+    <p>Pagos: ${fmt(pagRec.reduce((t,x)=>t+Number(x.valor),0))}</p>
+    <p>Empréstimos Pendentes: ${pendEmp.length}</p>
+    <p>Empréstimos Aprovados: ${aprEmp.length}</p>
+  `;
+}
+load();
+</script>
+</body></html>

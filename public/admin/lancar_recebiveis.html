@@ -1,0 +1,35 @@
+
+<html><body>
+<div id='sidebar'></div>
+<h1>Lançar Recebível</h1>
+<form id='f'>
+Usuário: <select id='uid'></select><br>
+Valor: <input id='valor' type='number' step='0.01'><br>
+Data: <input id='data' type='date'><br>
+<button>Lançar</button>
+</form>
+<div id='msg'></div>
+
+<script>
+fetch('/admin/sidebar_admin.html').then(r=>r.text()).then(h=>sidebar.innerHTML=h);
+
+async function loadUsers(){
+  let u = await fetch('/api/usuarios').then(r=>r.json());
+  uid.innerHTML = u.map(x=>`<option value='${x.id}'>${x.nome}</option>`).join('');
+}
+loadUsers();
+
+f.onsubmit=async e=>{
+  e.preventDefault();
+  let body={
+    usuario_id:uid.value,
+    valor:valor.value,
+    data:data.value,
+    tipo:'Admin',
+    status:'Pendente'
+  };
+  let r = await fetch('/api/recebiveis',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  msg.innerText="Lançado!";
+};
+</script>
+</body></html>

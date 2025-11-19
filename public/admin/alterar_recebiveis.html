@@ -1,0 +1,44 @@
+
+<html><body>
+<div id='sidebar'></div>
+<h1>Alterar Recebíveis</h1>
+<div id='list'></div>
+<script>
+fetch('/admin/sidebar_admin.html').then(r=>r.text()).then(h=>sidebar.innerHTML=h);
+
+function fmt(n){return 'R$ '+Number(n||0).toLocaleString('pt-BR',{minimumFractionDigits:2});}
+
+async function load(){
+  let rec = await fetch('/api/recebiveis').then(r=>r.json());
+  rec = rec.filter(r=>r.status=='Pendente');
+
+  let html = '<table><tr><th>ID</th><th>Usuário</th><th>Valor</th><th>Status</th><th>Ação</th></tr>';
+  rec.forEach(r=>{
+    html+=`<tr>
+      <td>${r.id}</td>
+      <td>${r.nome}</td>
+      <td>${fmt(r.valor)}</td>
+      <td><select id='s${r.id}'>
+            <option>Pendente</option>
+            <option>Pago</option>
+          </select></td>
+      <td><button onclick='save(${r.id})'>Salvar</button></td>
+    </tr>`;
+  });
+  html+='</table>';
+  list.innerHTML=html;
+}
+
+async function save(id){
+  let st = document.getElementById('s'+id).value;
+  await fetch('/api/recebiveis/'+id,{
+    method:'PUT',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({status:st})
+  });
+  alert("Atualizado!");
+  load();
+}
+load();
+</script>
+</body></html>
