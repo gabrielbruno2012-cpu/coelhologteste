@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>Dashboard - Admin | CoelhoLog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+
+    <!-- include.js (controle de login/admin) -->
+    <script src="/js/include.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            font-family: Arial, sans-serif;
+            background-color: #03203F;
+            color: white;
+        }
+
+        .content {
+            margin-left: 260px;
+            padding: 25px;
+            width: 100%;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 22px;
+        }
+
+        .card {
+            background: #05305F;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.30);
+        }
+
+        .card h3 {
+            margin: 0 0 12px;
+            color: #ffcc00;
+        }
+
+        .valor {
+            font-size: 26px;
+            margin-top: 10px;
+        }
+
+        .table-area {
+            margin-top: 35px;
+            background: #05305F;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        table th, table td {
+            padding: 12px;
+            background: #043564;
+            border-bottom: 1px solid #0a4e8a;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR ADMIN -->
+    <div id="sidebar"></div>
+    <script>
+        fetch("/admin/sidebar_admin.html")
+            .then(r => r.text())
+            .then(html => document.getElementById("sidebar").innerHTML = html);
+    </script>
+
+    <div class="content">
+
+        <h1>Dashboard Administrativo</h1>
+
+        <!-- CARDS -->
+        <div class="cards">
+
+            <div class="card">
+                <h3>📦 Empréstimos Pendentes</h3>
+                <div class="valor"><span id="qtdEmprestimos">0</span></div>
+                <div>Total: R$ <span id="totalEmprestimos">0,00</span></div>
+            </div>
+
+            <div class="card">
+                <h3>💰 Recebíveis Pendentes</h3>
+                <div class="valor"><span id="qtdRecebiveis">0</span></div>
+                <div>Total: R$ <span id="totalRecebiveis">0,00</span></div>
+            </div>
+
+            <div class="card">
+                <h3>✔️ Recebíveis Pagos</h3>
+                <div class="valor"><span id="qtdRecebiveisPagos">0</span></div>
+                <div>Total: R$ <span id="totalRecebiveisPagos">0,00</span></div>
+            </div>
+
+        </div>
+
+        <!-- ÚLTIMAS SOLICITAÇÕES -->
+        <div class="table-area">
+            <h3>📌 Últimas Solicitações</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Colaborador</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+
+                <tbody id="listaUltimas">
+                    <tr>
+                        <td colspan="5" style="text-align:center; padding:15px">Carregando...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", carregarDashboard);
+
+async function carregarDashboard() {
+    carregarEmprestimosPendentes();
+    carregarRecebiveisPendentes();
+    carregarRecebiveisPagos();
+    carregarUltimasSolicitacoes();
+}
+
+// Empréstimos Pendentes
+async function carregarEmprestimosPendentes() {
+    const res = await fetch("/api/admin/emprestimos-pendentes");
+    const data = await res.json();
+
+    let total = 0;
+    data.forEach(x => total += Number(x.valor));
+
+    document.getElementById("qtdEmprestimos").innerText = data.length;
+    document.getElementById("totalEmprestimos").innerText = total.toFixed(2);
+}
+
+// Recebíveis Pendentes
+async function carregarRecebiveisPendentes() {
+    const res = await fetch("/api/admin/recebiveis-pendentes");
+    const data = await res.json();
+
+    let total = 0;
+    data.forEach(x => total += Number(x.valor));
+
+    document.getElementById("qtdRecebiveis").innerText = data.length;
+
+    // CORRIGIDO (estava innerinnerText)
+    document.getElementById("totalRecebiveis").innerText = total.toFixed(2);
+}
+
+// Recebíveis Pagos
+async function carregarRecebiveisPagos() {
+    const res = await fetch("/api/admin/recebiveis-pagos");
+    const data = await res.json();
+
+    let total = 0;
+    data.forEach(x => total += Number(x.valor));
+
+    document.getElementById("qtdRecebiveisPagos").innerText = data.length;
+    document.getElementById("totalRecebiveisPagos").innerText = total.toFixed(2);
+}
+
+// Últimas solicitações
+async function carregarUltimasSolicitacoes() {
+    const emprestimos = await fetch("/api/admin/emprestimos-pendentes").then(r => r.json());
+    const recebiveis = await fetch("/api/admin/recebiveis-pendentes").then(r => r.json());
+
+    const lista = [...emprestimos, ...recebiveis];
+    lista.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+    const tbody = document.getElementById("listaUltimas");
+    tbody.innerHTML = "";
+
+    if (lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px;">Nenhuma solicitação encontrada.</td></tr>`;
+        return;
+    }
+
+    lista.slice(0, 10).forEach(item => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${item.tipo || "Recebível"}</td>
+            <td>${item.colaborador || "---"}</td>
+            <td>R$ ${Number(item.valor).toFixed(2)}</td>
+            <td>${item.status}</td>
+            <td>${item.data || "--/--/----"}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+</script>
+
+</body>
+</html>

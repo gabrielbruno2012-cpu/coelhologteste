@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Lançar Recebíveis - Admin | CoelhoLog</title>
+
+    <link rel="stylesheet" href="/css/style.css" />
+    <script src="/js/include.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            font-family: Arial, sans-serif;
+            background-color: #03203F;
+            color: white;
+        }
+
+        .content {
+            margin-left: 260px;
+            padding: 25px;
+            width: 100%;
+        }
+
+        .form-box {
+            background: #05305F;
+            padding: 25px;
+            border-radius: 12px;
+            width: 450px;
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            margin-top: 5px;
+        }
+
+        .btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            background: #FFC400;
+            color: black;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR ADMIN -->
+    <div id="sidebar"></div>
+    <script>
+        fetch("/admin/sidebar_admin.html")
+            .then(r => r.text())
+            .then(html => (document.getElementById("sidebar").innerHTML = html));
+    </script>
+
+    <div class="content">
+
+        <h1>Lançar Recebíveis</h1>
+
+        <div class="form-box">
+
+            <label>Colaborador</label>
+            <select id="colaborador">
+                <option value="">Selecione um colaborador</option>
+            </select>
+
+            <label>Valor do Recebível</label>
+            <input type="number" id="valor" placeholder="Ex: 150.00" />
+
+            <label>Data</label>
+            <input type="date" id="data" />
+
+            <button class="btn" onclick="lancarRecebivel()">Lançar Recebível</button>
+
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", carregarColaboradores);
+
+        // Carrega colaboradores para o select
+        async function carregarColaboradores() {
+            const res = await fetch("/api/admin/listar-colaboradores");
+            const dados = await res.json();
+
+            const select = document.getElementById("colaborador");
+
+            dados.forEach(c => {
+                const option = document.createElement("option");
+                option.value = c.id;
+                option.textContent = `${c.nome} (${c.email})`;
+                select.appendChild(option);
+            });
+        }
+
+        // Lançar novo recebível
+        async function lancarRecebivel() {
+            const colaborador = document.getElementById("colaborador").value;
+            const valor = document.getElementById("valor").value;
+            const data = document.getElementById("data").value;
+
+            if (!colaborador || !valor || !data) {
+                alert("Preencha todos os campos!");
+                return;
+            }
+
+            const envio = {
+                colaborador,
+                valor,
+                data
+            };
+
+            const res = await fetch("/api/admin/lancar-recebivel", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(envio)
+            });
+
+            const resposta = await res.json();
+
+            if (resposta.success) {
+                alert("Recebível lançado com sucesso!");
+
+                document.getElementById("colaborador").value = "";
+                document.getElementById("valor").value = "";
+                document.getElementById("data").value = "";
+
+            } else {
+                alert("Erro ao lançar recebível.");
+            }
+        }
+    </script>
+
+</body>
+
+</html>

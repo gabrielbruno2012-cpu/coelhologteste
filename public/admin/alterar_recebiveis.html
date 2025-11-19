@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Alterar Recebíveis - Admin | CoelhoLog</title>
+
+    <link rel="stylesheet" href="/css/style.css" />
+    <script src="/js/include.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            font-family: Arial, sans-serif;
+            background-color: #03203F;
+            color: white;
+        }
+
+        .content {
+            margin-left: 260px;
+            padding: 25px;
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+
+        table th,
+        table td {
+            padding: 12px;
+            background: #043564;
+            border-bottom: 1px solid #0a4e8a;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            background: #FFC400;
+            color: black;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+        }
+
+        select {
+            padding: 6px;
+            border-radius: 6px;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar Admin -->
+    <div id="sidebar"></div>
+    <script>
+        fetch("/admin/sidebar_admin.html")
+            .then(r => r.text())
+            .then(html => (document.getElementById("sidebar").innerHTML = html));
+    </script>
+
+    <div class="content">
+        <h1>Alterar Recebíveis</h1>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Colaborador</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                    <th>Data</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody id="listaRecebiveis">
+                <tr>
+                    <td colspan="6" style="padding: 20px;">Carregando...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", carregarRecebiveis);
+
+        async function carregarRecebiveis() {
+            const res = await fetch("/api/admin/recebiveis-pendentes");
+            const dados = await res.json();
+
+            const tbody = document.getElementById("listaRecebiveis");
+            tbody.innerHTML = "";
+
+            if (!dados.length) {
+                tbody.innerHTML =
+                    `<tr><td colspan="6" style="padding:15px; text-align:center;">Nenhum recebível pendente.</td></tr>`;
+                return;
+            }
+
+            dados.forEach(r => {
+                const tr = document.createElement("tr");
+
+                tr.innerHTML = `
+                    <td>${r.id}</td>
+                    <td>${r.colaborador || "---"}</td>
+                    <td>R$ ${Number(r.valor).toFixed(2)}</td>
+                    <td>${r.status}</td>
+                    <td>${r.data || "--/--/----"}</td>
+                    <td>
+                        <select id="status_${r.id}">
+                            <option value="pendente" ${r.status === "pendente" ? "selected" : ""}>Pendente</option>
+                            <option value="pago">Pago</option>
+                            <option value="reprovado">Reprovado</option>
+                        </select>
+                        <button class="btn" onclick="atualizarStatus(${r.id})">Salvar</button>
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function atualizarStatus(id) {
+            const novoStatus = document.getElementById(`status_${id}`).value;
+
+            const res = await fetch("/api/admin/recebiveis-atualizar", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, status: novoStatus })
+            });
+
+            const resultado = await res.json();
+
+            if (resultado.success) {
+                alert("Status atualizado com sucesso!");
+                carregarRecebiveis();
+            } else {
+                alert("Erro ao atualizar o status!");
+            }
+        }
+    </script>
+
+</body>
+
+</html>
