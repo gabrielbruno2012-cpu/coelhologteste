@@ -1,0 +1,54 @@
+
+<html>
+<head>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div id="sidebar"></div>
+<div class="main">
+  <div class="header-right"><button class="btn" onclick="logout()">Logout</button></div>
+  <h1>Painel Administrativo</h1>
+
+  <div class="top-cards">
+    <div class="top-card card"><div class="small">Recebíveis Pendentes</div><h2 id="rpend"></h2></div>
+    <div class="top-card card"><div class="small">Recebíveis Pagos</div><h2 id="rpago"></h2></div>
+    <div class="top-card card"><div class="small">Empréstimos Pendentes</div><h2 id="epend"></h2></div>
+    <div class="top-card card"><div class="small">Empréstimos Aprovados</div><h2 id="eaprov"></h2></div>
+  </div>
+
+  <div class="card">
+    <h3>Últimos Recebíveis</h3>
+    <table class="table" id="receb"></table>
+  </div>
+</div>
+
+<script>
+fetch('/admin/sidebar_admin.html').then(r=>r.text()).then(h=>sidebar.innerHTML=h);
+
+function fmt(n){return "R$ "+Number(n||0).toLocaleString("pt-BR",{minimumFractionDigits:2});}
+function logout(){localStorage.clear();location="/";}
+
+async function load(){
+  let rec = await fetch("/api/recebiveis").then(r=>r.json());
+  let emp = await fetch("/api/emprestimos").then(r=>r.json());
+
+  let pendR = rec.filter(r=>r.status=="Pendente");
+  let pagoR = rec.filter(r=>r.status=="Pago");
+  let pendE = emp.filter(e=>e.status=="Em análise");
+  let aprE  = emp.filter(e=>e.status=="Aprovado");
+
+  rpend.innerText = fmt(pendR.reduce((t,x)=>t+Number(x.valor),0));
+  rpago.innerText = fmt(pagoR.reduce((t,x)=>t+Number(x.valor),0));
+  epend.innerText = pendE.length;
+  eaprov.innerText = aprE.length;
+
+  let html = "<tr><th>ID</th><th>Usuário</th><th>Valor</th><th>Status</th></tr>";
+  rec.slice(0,10).forEach(r=>{
+    html+=`<tr><td>${r.id}</td><td>${r.nome}</td><td>${fmt(r.valor)}</td><td>${r.status}</td></tr>`;
+  });
+  receb.innerHTML = html;
+}
+load();
+</script>
+</body>
+</html>

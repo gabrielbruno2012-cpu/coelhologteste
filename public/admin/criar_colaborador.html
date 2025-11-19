@@ -1,0 +1,30 @@
+
+<html><head>
+<link rel="stylesheet" href="/css/style.css">
+</head><body>
+<div id="sidebar"></div>
+<div class="main">
+ <div class="header-right"><button class="btn" onclick="logout()">Logout</button></div>
+ <h1>Criar Colaborador</h1>
+
+ <div class="card">
+   <input class="input" id="nome" placeholder="Nome">
+   <input class="input" id="email" placeholder="Email">
+   <input class="input" id="senha" placeholder="Senha">
+   <button class="btn" onclick="criar()">Criar</button>
+   <div id="msg"></div>
+ </div>
+</div>
+
+<script>
+fetch('/admin/sidebar_admin.html').then(r=>r.text()).then(h=>sidebar.innerHTML=h);
+function logout(){localStorage.clear();location="/";}
+
+async function criar(){
+ let body={nome:nome.value,email:email.value,senha:senha.value,role:"colaborador"};
+ let r=await fetch("/api/usuarios",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+ let j=await r.json();
+ msg.innerText = j.error ? "Erro: "+j.error : "Criado!";
+}
+</script>
+</body></html>
