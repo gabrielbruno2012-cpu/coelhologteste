@@ -53,6 +53,21 @@ async function load(){
     html+=`<tr><td>${r.id}</td><td>${r.nome}</td><td>${fmt(r.valor)}</td><td>${r.status}</td></tr>`;
   });
   receb.innerHTML = html;
+  // --- Últimos Empréstimos ---
+let htmlE = "<tr><th>ID</th><th>Usuário</th><th>Valor</th><th>Status</th></tr>";
+
+emp.slice(0,10).forEach(e=>{
+  htmlE += `
+    <tr>
+      <td>${e.id}</td>
+      <td>${e.nome}</td>
+      <td>${fmt(e.valor)}</td>
+      <td>${e.status}</td>
+    </tr>
+  `;
+});
+
+document.getElementById("ult_emp").innerHTML = htmlE;
 }
 load();
 </script>
