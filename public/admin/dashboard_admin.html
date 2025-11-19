@@ -1,0 +1,155 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Painel Admin - CoelhoLog</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <main class="main">
+    <div class="header-right">
+      <button class="btn" onclick="logout()">Logout</button>
+    </div>
+    <h1>Painel Administrativo</h1>
+
+    <div class="top-cards">
+      <div class="top-card card">
+        <div class="small">Recebíveis Pendentes</div>
+        <div id="total_recebiveis_pendentes" class="huge">R$ 0,00</div>
+      </div>
+      <div class="top-card card">
+        <div class="small">Recebíveis Pagos</div>
+        <div id="total_recebiveis_pagos" class="huge">R$ 0,00</div>
+      </div>
+      <div class="top-card card">
+        <div class="small">Empréstimos Pendentes</div>
+        <div id="total_emprestimos_pendentes" class="huge">R$ 0,00</div>
+      </div>
+      <div class="top-card card">
+        <div class="small">Empréstimos Aprovados</div>
+        <div id="total_emprestimos_aprovados" class="huge">R$ 0,00</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Recebíveis (Pendentes e Pagos)</h3>
+      <div id="tabela_recebiveis"></div>
+    </div>
+
+    <div class="card">
+      <h3>Empréstimos Pendentes</h3>
+      <div id="tabela_emprestimos"></div>
+    </div>
+  </main>
+
+  <script>
+  // carrega sidebar específica do admin
+  fetch('/admin/sidebar_admin.html')
+    .then(r => r.text())
+    .then(html => document.getElementById('sidebar-container').innerHTML = html)
+    .catch(err => console.error('Erro ao carregar sidebar admin:', err));
+
+  function logout(){
+    localStorage.removeItem('user');
+    window.location = '/';
+  }
+
+  function fmt(v){
+    return 'R$ ' + Number(v||0).toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  async function loadDashboardAdmin(){
+    try{
+      // recebíveis pendentes
+      const recPendRes = await fetch('/api/admin/recebiveis-pendentes');
+      const recPend = recPendRes.ok ? await recPendRes.json() : [];
+
+      // recebíveis pagos
+      const recPagoRes = await fetch('/api/admin/recebiveis-pagos');
+      const recPago = recPagoRes.ok ? await recPagoRes.json() : [];
+
+      // empréstimos pendentes
+      const empPendRes = await fetch('/api/admin/emprestimos-pendentes');
+      const empPend = empPendRes.ok ? await empPendRes.json() : [];
+
+      // totais
+      let totalRecPend = 0, totalRecPago = 0;
+      let totalEmpPend = 0, totalEmpAprov = 0;
+
+      recPend.forEach(r => { totalRecPend += Number(r.valor || 0); });
+      recPago.forEach(r => { totalRecPago += Number(r.valor || 0); });
+
+      empPend.forEach(e => {
+        totalEmpPend += Number(e.valor || 0);
+      });
+
+      // se o backend também retornar empréstimos aprovados numa lista separada,
+      // poderia haver outro fetch; aqui mantemos zero se a rota não existir.
+      // document.getElementById updates
+      document.getElementById('total_recebiveis_pendentes').innerText = fmt(totalRecPend);
+      document.getElementById('total_recebiveis_pagos').innerText = fmt(totalRecPago);
+      document.getElementById('total_emprestimos_pendentes').innerText = fmt(totalEmpPend);
+      document.getElementById('total_emprestimos_aprovados').innerText = fmt(totalEmpAprov);
+
+      // monta tabelas
+      montarTabelaRecebiveis(recPend, recPago);
+      montarTabelaEmprestimos(empPend);
+    }catch(e){
+      console.error('Erro ao carregar dashboard admin:', e);
+    }
+  }
+
+  function montarTabelaRecebiveis(pendentes, pagos){
+    let html = '';
+    const buildTable = (rows, titulo) => {
+      if (!rows || !rows.length) return '<p>Nenhum registro.</p>';
+      let t = '<h4>'+titulo+'</h4>';
+      t += '<div class="table-wrapper"><table class="table">';
+      t += '<thead><tr><th>ID</th><th>Colaborador</th><th>Valor</th><th>Status</th><th>Data</th></tr></thead><tbody>';
+      rows.forEach(r => {
+        t += '<tr>'+
+          '<td>'+(r.id||'')+'</td>'+
+          '<td>'+(r.colaborador||r.nome_colaborador||'')+'</td>'+
+          '<td>'+fmt(r.valor||0)+'</td>'+
+          '<td>'+(r.status||'')+'</td>'+
+          '<td>'+(r.data||'')+'</td>'+
+        '</tr>';
+      });
+      t += '</tbody></table></div>';
+      return t;
+    };
+    html += buildTable(pendentes, 'Pendentes');
+    html += buildTable(pagos, 'Pagos');
+    document.getElementById('tabela_recebiveis').innerHTML = html;
+  }
+
+  function montarTabelaEmprestimos(rows){
+    if (!rows || !rows.length){
+      document.getElementById('tabela_emprestimos').innerHTML = '<p>Nenhum empréstimo pendente.</p>';
+      return;
+    }
+    let html = '<div class="table-wrapper"><table class="table">';
+    html += '<thead><tr><th>ID</th><th>Colaborador</th><th>Valor</th><th>Status</th><th>Data</th></tr></thead><tbody>';
+    rows.forEach(e => {
+      html += '<tr>'+
+        '<td>'+(e.id||'')+'</td>'+
+        '<td>'+(e.colaborador||e.nome_colaborador||'')+'</td>'+
+        '<td>'+fmt(e.valor||0)+'</td>'+
+        '<td>'+(e.status||'')+'</td>'+
+        '<td>'+(e.data||'')+'</td>'+
+      '</tr>';
+    });
+    html += '</tbody></table></div>';
+    document.getElementById('tabela_emprestimos').innerHTML = html;
+  }
+
+  window.addEventListener('DOMContentLoaded', loadDashboardAdmin);
+  </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Lançar Recebível - Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <main class="main">
+    <div class="header-right">
+      <button class="btn" onclick="logout()">Logout</button>
+    </div>
+    <h1>Lançar Recebível</h1>
+    <div class="card">
+      <form id="form_recebivel" class="form-grid">
+        <div class="form-group">
+          <label for="colaborador">Colaborador</label>
+          <select id="colaborador" required>
+            <option value="">Selecione...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="valor">Valor</label>
+          <input type="number" step="0.01" id="valor" required>
+        </div>
+        <div class="form-group">
+          <label for="data">Data</label>
+          <input type="date" id="data" required>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn">Lançar</button>
+        </div>
+      </form>
+      <p id="msg" style="margin-top:10px;"></p>
+    </div>
+  </main>
+
+  <script>
+  fetch('/admin/sidebar_admin.html')
+    .then(r => r.text())
+    .then(html => document.getElementById('sidebar-container').innerHTML = html)
+    .catch(err => console.error('Erro ao carregar sidebar admin:', err));
+
+  function logout(){
+    localStorage.removeItem('user');
+    window.location = '/';
+  }
+
+  async function carregarColaboradoresSelect(){
+    try{
+      const res = await fetch('/api/admin/listar-colaboradores');
+      const rows = res.ok ? await res.json() : [];
+      const sel = document.getElementById('colaborador');
+      sel.innerHTML = '<option value="">Selecione...</option>';
+      rows.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.nome || c.email || ('ID '+c.id);
+        sel.appendChild(opt);
+      });
+    }catch(e){
+      console.error('Erro ao carregar colaboradores:', e);
+    }
+  }
+
+  document.getElementById('form_recebivel').addEventListener('submit', async function(ev){
+    ev.preventDefault();
+    const colaborador = document.getElementById('colaborador').value;
+    const valor = document.getElementById('valor').value;
+    const data = document.getElementById('data').value;
+    if(!colaborador || !valor || !data){
+      document.getElementById('msg').innerText = 'Preencha todos os campos.';
+      return;
+    }
+    try{
+      const res = await fetch('/api/admin/lancar-recebivel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ colaborador, valor, data })
+      });
+      const dataRes = await res.json();
+      if(dataRes && dataRes.success){
+        document.getElementById('msg').innerText = 'Recebível lançado com sucesso!';
+        (this).reset();
+      }else{
+        document.getElementById('msg').innerText = 'Erro ao lançar recebível.';
+      }
+    }catch(e){
+      console.error('Erro ao lançar recebível:', e);
+      document.getElementById('msg').innerText = 'Erro ao lançar recebível.';
+    }
+  });
+
+  window.addEventListener('DOMContentLoaded', function(){
+    carregarColaboradoresSelect();
+  });
+  </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Alterar Empréstimos - Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <main class="main">
+    <div class="header-right">
+      <button class="btn" onclick="logout()">Logout</button>
+    </div>
+    <h1>Alterar Empréstimos</h1>
+    <div class="card">
+      <p>Aprovar, negar ou manter empréstimos pendentes.</p>
+      <div id="lista_emprestimos"></div>
+    </div>
+  </main>
+
+  <script>
+  fetch('/admin/sidebar_admin.html')
+    .then(r => r.text())
+    .then(html => document.getElementById('sidebar-container').innerHTML = html)
+    .catch(err => console.error('Erro ao carregar sidebar admin:', err));
+
+  function logout(){
+    localStorage.removeItem('user');
+    window.location = '/';
+  }
+
+  function fmt(v){
+    return 'R$ ' + Number(v||0).toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  async function carregarEmprestimos(){
+    try{
+      const res = await fetch('/api/admin/emprestimos-pendentes');
+      const rows = res.ok ? await res.json() : [];
+      if(!rows.length){
+        document.getElementById('lista_emprestimos').innerHTML = '<p>Nenhum empréstimo pendente.</p>';
+        return;
+      }
+      let html = '<div class="table-wrapper"><table class="table">';
+      html += '<thead><tr><th>ID</th><th>Colaborador</th><th>Valor</th><th>Status</th><th>Data</th><th>Ação</th></tr></thead><tbody>';
+      rows.forEach(e => {
+        const id = e.id || '';
+        const status = (e.status||'').toUpperCase();
+        html += '<tr>'+
+          '<td>'+id+'</td>'+
+          '<td>'+(e.colaborador||e.nome_colaborador||'')+'</td>'+
+          '<td>'+fmt(e.valor||0)+'</td>'+
+          '<td>'+
+            '<select data-id="'+id+'" class="status-emprestimo">'+
+              '<option value="PENDENTE" '+(status==='PENDENTE'?'selected':'')+'>PENDENTE</option>'+
+              '<option value="APROVADO" '+(status==='APROVADO'?'selected':'')+'>APROVADO</option>'+
+              '<option value="NEGADO" '+(status==='NEGADO'?'selected':'')+'>NEGADO</option>'+
+            '</select>'+
+          '</td>'+
+          '<td>'+(e.data||'')+'</td>'+
+          '<td><button class="btn btn-sm" onclick="salvarEmprestimo('+id+')">Salvar</button></td>'+
+        '</tr>';
+      });
+      html += '</tbody></table></div>';
+      document.getElementById('lista_emprestimos').innerHTML = html;
+    }catch(e){
+      console.error('Erro ao carregar empréstimos:', e);
+      document.getElementById('lista_emprestimos').innerHTML = '<p>Erro ao carregar empréstimos.</p>';
+    }
+  }
+
+  async function salvarEmprestimo(id){
+    try{
+      const select = document.querySelector('select.status-emprestimo[data-id="'+id+'"]');
+      if(!select) return;
+      const status = select.value;
+      const res = await fetch('/api/admin/emprestimos-atualizar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, status: status })
+      });
+      const data = await res.json();
+      if(data && data.success){
+        alert('Status atualizado com sucesso!');
+        carregarEmprestimos();
+      }else{
+        alert('Erro ao atualizar status.');
+      }
+    }catch(e){
+      console.error('Erro ao salvar empréstimo:', e);
+      alert('Erro ao atualizar status.');
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', carregarEmprestimos);
+  </script>
+</body>
+</html>

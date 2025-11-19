@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Criar Colaborador - Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <main class="main">
+    <div class="header-right">
+      <button class="btn" onclick="logout()">Logout</button>
+    </div>
+    <h1>Criar Novo Colaborador</h1>
+    <div class="card">
+      <form id="form_colaborador" class="form-grid">
+        <div class="form-group">
+          <label for="nome">Nome</label>
+          <input type="text" id="nome" required>
+        </div>
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" required>
+        </div>
+        <div class="form-group">
+          <label for="cpf">CPF</label>
+          <input type="text" id="cpf" required>
+        </div>
+        <div class="form-group">
+          <label for="senha">Senha</label>
+          <input type="password" id="senha" required>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn">Criar Colaborador</button>
+        </div>
+      </form>
+      <p id="msg" style="margin-top:10px;"></p>
+    </div>
+
+    <div class="card">
+      <h3>Colaboradores cadastrados</h3>
+      <div id="lista_colaboradores"></div>
+    </div>
+  </main>
+
+  <script>
+  fetch('/admin/sidebar_admin.html')
+    .then(r => r.text())
+    .then(html => document.getElementById('sidebar-container').innerHTML = html)
+    .catch(err => console.error('Erro ao carregar sidebar admin:', err));
+
+  function logout(){
+    localStorage.removeItem('user');
+    window.location = '/';
+  }
+
+  async function carregarColaboradores(){
+    try{
+      const res = await fetch('/api/admin/listar-colaboradores');
+      const rows = res.ok ? await res.json() : [];
+      if(!rows.length){
+        document.getElementById('lista_colaboradores').innerHTML = '<p>Nenhum colaborador cadastrado.</p>';
+        return;
+      }
+      let html = '<div class="table-wrapper"><table class="table">';
+      html += '<thead><tr><th>ID</th><th>Nome</th><th>E-mail</th><th>CPF</th></tr></thead><tbody>';
+      rows.forEach(c => {
+        html += '<tr>'+
+          '<td>'+(c.id||'')+'</td>'+
+          '<td>'+(c.nome||'')+'</td>'+
+          '<td>'+(c.email||'')+'</td>'+
+          '<td>'+(c.cpf||'')+'</td>'+
+        '</tr>';
+      });
+      html += '</tbody></table></div>';
+      document.getElementById('lista_colaboradores').innerHTML = html;
+    }catch(e){
+      console.error('Erro ao carregar colaboradores:', e);
+      document.getElementById('lista_colaboradores').innerHTML = '<p>Erro ao carregar colaboradores.</p>';
+    }
+  }
+
+  document.getElementById('form_colaborador').addEventListener('submit', async function(ev){
+    ev.preventDefault();
+    const nome = document.getElementById('nome').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const cpf = document.getElementById('cpf').value.trim();
+    const senha = document.getElementById('senha').value.trim();
+    if(!nome || !email || !cpf || !senha){
+      document.getElementById('msg').innerText = 'Preencha todos os campos.';
+      return;
+    }
+    try{
+      const res = await fetch('/api/admin/criar-colaborador', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, email, cpf, senha })
+      });
+      const data = await res.json();
+      if(data && data.success){
+        document.getElementById('msg').innerText = 'Colaborador criado com sucesso!';
+        (this).reset();
+        carregarColaboradores();
+      }else{
+        document.getElementById('msg').innerText = 'Erro ao criar colaborador.';
+      }
+    }catch(e){
+      console.error('Erro ao criar colaborador:', e);
+      document.getElementById('msg').innerText = 'Erro ao criar colaborador.';
+    }
+  });
+
+  window.addEventListener('DOMContentLoaded', carregarColaboradores);
+  </script>
+</body>
+</html>

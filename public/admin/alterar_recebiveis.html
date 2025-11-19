@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Alterar Recebíveis - Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <main class="main">
+    <div class="header-right">
+      <button class="btn" onclick="logout()">Logout</button>
+    </div>
+    <h1>Alterar Recebíveis</h1>
+    <div class="card">
+      <p>Altere o status dos recebíveis pendentes para Pago ou outro status configurado.</p>
+      <div id="lista_recebiveis"></div>
+    </div>
+  </main>
+
+  <script>
+  fetch('/admin/sidebar_admin.html')
+    .then(r => r.text())
+    .then(html => document.getElementById('sidebar-container').innerHTML = html)
+    .catch(err => console.error('Erro ao carregar sidebar admin:', err));
+
+  function logout(){
+    localStorage.removeItem('user');
+    window.location = '/';
+  }
+
+  function fmt(v){
+    return 'R$ ' + Number(v||0).toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  async function carregarRecebiveis(){
+    try{
+      const res = await fetch('/api/admin/recebiveis-pendentes');
+      const rows = res.ok ? await res.json() : [];
+      if(!rows.length){
+        document.getElementById('lista_recebiveis').innerHTML = '<p>Nenhum recebível pendente.</p>';
+        return;
+      }
+      let html = '<div class="table-wrapper"><table class="table">';
+      html += '<thead><tr><th>ID</th><th>Colaborador</th><th>Valor</th><th>Status</th><th>Data</th><th>Ação</th></tr></thead><tbody>';
+      rows.forEach(r => {
+        const id = r.id || '';
+        const status = (r.status||'').toUpperCase();
+        html += '<tr>'+
+          '<td>'+id+'</td>'+
+          '<td>'+(r.colaborador||r.nome_colaborador||'')+'</td>'+
+          '<td>'+fmt(r.valor||0)+'</td>'+
+          '<td>'+
+            '<select data-id="'+id+'" class="status-recebivel">'+
+              '<option value="PENDENTE" '+(status==='PENDENTE'?'selected':'')+'>PENDENTE</option>'+
+              '<option value="PAGO" '+(status==='PAGO'?'selected':'')+'>PAGO</option>'+
+            '</select>'+
+          '</td>'+
+          '<td>'+(r.data||'')+'</td>'+
+          '<td><button class="btn btn-sm" onclick="salvarStatus('+id+')">Salvar</button></td>'+
+        '</tr>';
+      });
+      html += '</tbody></table></div>';
+      document.getElementById('lista_recebiveis').innerHTML = html;
+    }catch(e){
+      console.error('Erro ao carregar recebíveis:', e);
+      document.getElementById('lista_recebiveis').innerHTML = '<p>Erro ao carregar recebíveis.</p>';
+    }
+  }
+
+  async function salvarStatus(id){
+    try{
+      const select = document.querySelector('select.status-recebivel[data-id="'+id+'"]');
+      if(!select) return;
+      const status = select.value;
+      const res = await fetch('/api/admin/recebiveis-atualizar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, status: status })
+      });
+      const data = await res.json();
+      if(data && data.success){
+        alert('Status atualizado com sucesso!');
+        carregarRecebiveis();
+      }else{
+        alert('Erro ao atualizar status.');
+      }
+    }catch(e){
+      console.error('Erro ao salvar status:', e);
+      alert('Erro ao atualizar status.');
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', carregarRecebiveis);
+  </script>
+</body>
+</html>
