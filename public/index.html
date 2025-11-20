@@ -14,7 +14,7 @@ async function login(){
   const email=document.getElementById('email').value;
   const password=document.getElementById('password').value;
   const res = await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-  if(res.ok){ const d = await res.json(); localStorage.setItem('usuario', JSON.stringify(d)); if(d.role==='financeiro') window.location='/admin/dashboard.html'; else window.location='/colaborador/dashboard.html'; }
+  if(res.ok){ const d = await res.json(); localStorage.setItem('usuario', JSON.stringify(d)); if(d.role==='financeiro') window.location='/admin/dashboard_admin.html'; else window.location='/colaborador/dashboard.html'; }
   else { document.getElementById('msg').innerText='Credenciais inválidas'; }
 }
 </script>
