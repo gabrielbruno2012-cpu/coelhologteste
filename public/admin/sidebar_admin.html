@@ -1,43 +1,269 @@
-<div class="sidebar">
-    <div class="sidebar-logo">
-        <img src="/img/logo.png" alt="CoelhoLog" />
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - CoelhoLog</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: #F3F6FB;
+            display: flex;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 220px;
+            background: #062647;
+            color: white;
+            height: 100vh;
+            padding-top: 20px;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 14px 20px;
+            color: #e3e3e3;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .sidebar a:hover {
+            background: #0a3a63;
+            color: white;
+        }
+
+        .sidebar i {
+            margin-right: 10px;
+        }
+
+        /* TOPBAR */
+        .topbar {
+            position: fixed;
+            left: 220px;
+            right: 0;
+            top: 0;
+            height: 70px;
+            background: #062647;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .topbar img {
+            height: 42px;
+        }
+
+        .logout-btn {
+            background: #FFC300;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .content {
+            margin-left: 220px;
+            margin-top: 90px;
+            padding: 20px 40px;
+            width: calc(100% - 260px);
+        }
+
+        h2 {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: #062647;
+        }
+
+        /* CARDS */
+        .cards {
+            display: flex;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+            width: 23%;
+            height: 115px !important;
+        }
+
+        .card small {
+            font-size: 13px;
+            color: #555;
+        }
+
+        .card h3 {
+            margin-top: 8px;
+            font-size: 22px;
+            color: #062647;
+        }
+
+        /* TABELA */
+        .table-box {
+            background: white;
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background: #EAEFF3;
+            padding: 12px;
+            text-align: left;
+            color: #062647;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #062647;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <a href="dashboard_admin.html"><i class="fa fa-chart-line"></i> Dashboard</a>
+        <a href="alterar_recebiveis.html"><i class="fa fa-pen-to-square"></i> Alterar Recebíveis</a>
+        <a href="alterar_emprestimos.html"><i class="fa fa-money-bill-transfer"></i> Alterar Empréstimos</a>
+        <a href="criar_colaborador.html"><i class="fa fa-user-plus"></i> Criar Colaborador</a>
+        <a href="lancar_recebiveis.html"><i class="fa fa-plus"></i> Lançar Recebível</a>
+        <a href="todos_emprestimos.html"><i class="fa fa-list"></i> Todos Empréstimos</a>
     </div>
 
-    <ul class="menu">
-        <li class="menu-item">
-            <a href="dashboard_admin.html">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
-            </a>
-        </li>
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <img src="/img/logo.png" alt="CoelhoLog">
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
 
-        <li class="menu-item">
-            <a href="alterar_recebiveis.html">
-                <i class="fas fa-edit"></i> Alterar<br>Recebíveis
-            </a>
-        </li>
+    <!-- CONTEÚDO -->
+    <div class="content">
+        <h2>Painel Administrativo</h2>
 
-        <li class="menu-item">
-            <a href="alterar_emprestimos.html">
-                <i class="fas fa-file-invoice-dollar"></i> Alterar<br>Empréstimos
-            </a>
-        </li>
+        <div class="cards">
+            <div class="card">
+                <small>Recebíveis Pendentes</small>
+                <h3 id="pendentes">R$ 0,00</h3>
+            </div>
+            <div class="card">
+                <small>Recebíveis Pagos</small>
+                <h3 id="pagos">R$ 0,00</h3>
+            </div>
+            <div class="card">
+                <small>Empréstimos Pendentes</small>
+                <h3 id="empPendentes">0</h3>
+            </div>
+            <div class="card">
+                <small>Empréstimos Aprovados</small>
+                <h3 id="empAprovados">0</h3>
+            </div>
+        </div>
 
-        <li class="menu-item">
-            <a href="criar_colaborador.html">
-                <i class="fas fa-user-plus"></i> Criar<br>Colaborador
-            </a>
-        </li>
+        <div class="table-box">
+            <h3>Últimos Recebíveis</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuário</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="listaRecebiveis"></tbody>
+            </table>
+        </div>
+    </div>
 
-        <li class="menu-item">
-            <a href="lancar_recebiveis.html">
-                <i class="fas fa-plus"></i> Lançar<br>Recebível
-            </a>
-        </li>
+<script>
+/* ==========================================
+   🔐 PROTEÇÃO DE ACESSO (ADMIN ONLY)
+========================================== */
+(function protegerPagina() {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || user.role !== "admin") {
+        window.location.href = "../index.html";
+    }
+})();
 
-        <li class="menu-item">
-            <a href="todos_emprestimos.html">
-                <i class="fas fa-list"></i> Todos<br>Empréstimos
-            </a>
-        </li>
-    </ul>
-</div>
+/* ==========================================
+   📊 CARREGAR DADOS DO DASHBOARD
+========================================== */
+async function carregarDashboard() {
+    try {
+        const resReceb = await fetch("/api/recebiveis");
+        const recebiveis = await resReceb.json();
+
+        let totalPend = 0, totalPago = 0;
+
+        recebiveis.forEach(r => {
+            if (r.status === "Pendente") totalPend += parseFloat(r.valor);
+            if (r.status === "Pago") totalPago += parseFloat(r.valor);
+        });
+
+        document.getElementById("pendentes").innerHTML =
+            `R$ ${totalPend.toLocaleString("pt-BR",{minimumFractionDigits:2})}`;
+
+        document.getElementById("pagos").innerHTML =
+            `R$ ${totalPago.toLocaleString("pt-BR",{minimumFractionDigits:2})}`;
+
+        const tbody = document.getElementById("listaRecebiveis");
+        tbody.innerHTML = "";
+
+        recebiveis.slice(0, 5).forEach(r => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${r.id}</td>
+                    <td>${r.nome}</td>
+                    <td>R$ ${parseFloat(r.valor).toLocaleString("pt-BR",{minimumFractionDigits:2})}</td>
+                    <td>${r.status}</td>
+                </tr>`;
+        });
+
+        const resEmp = await fetch("/api/emprestimos");
+        const emprestimos = await resEmp.json();
+
+        document.getElementById("empPendentes").innerText =
+            emprestimos.filter(e => e.status === "Pendente").length;
+
+        document.getElementById("empAprovados").innerText =
+            emprestimos.filter(e => e.status === "Aprovado").length;
+
+    } catch (e) {
+        console.error("Erro:", e);
+    }
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = "../index.html";
+}
+
+carregarDashboard();
+</script>
+
+</body>
+</html>
