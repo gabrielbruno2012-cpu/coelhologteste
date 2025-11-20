@@ -1,42 +1,125 @@
+<html>
+<head>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
 
-<html><head>
-<link rel="stylesheet" href="/css/style.css">
-</head><body>
+<!-- 🔐 Proteção -->
 <script>
 const uStr = localStorage.getItem("usuario");
 let u = null;
-try { u = uStr ? JSON.parse(uStr) : null; } catch(e){ u = null; }
-
-if (!u) {
-  window.location.href = "/";
-} else if (u.role !== "financeiro" && u.role !== "admin") {
-  window.location.href = "/colaborador/dashboard.html";
+try { u = JSON.parse(uStr); } catch(e){ u = null; }
+if (!u || (u.role !== 'financeiro' && u.role !== 'admin')) {
+    window.location.href = "/";
 }
 </script>
 
 <div id="sidebar"></div>
-<div class="main">
- <div class="header-right"><button class="btn" onclick="logout()">Logout</button></div>
- <h1>Criar Colaborador</h1>
 
- <div class="card">
-   <input class="input" id="nome" placeholder="Nome">
-   <input class="input" id="email" placeholder="Email">
-   <input class="input" id="senha" placeholder="Senha">
-   <button class="btn" onclick="criar()">Criar</button>
-   <div id="msg"></div>
- </div>
+<div class="main">
+
+    <div class="header-right">
+        <button class="btn" onclick="localStorage.clear(); location='/'">Logout</button>
+    </div>
+
+    <h1>Criar Colaborador</h1>
+
+    <div class="card" style="margin-top:20px;">
+        <div class="form-group">
+            <label>Nome</label>
+            <input id="nome" class="input" type="text" placeholder="Digite o nome">
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input id="email" class="input" type="email" placeholder="email@exemplo.com">
+        </div>
+
+        <div class="form-group">
+            <label>Senha</label>
+            <input id="senha" class="input" type="password" placeholder="Digite uma senha">
+        </div>
+
+        <div class="form-group">
+            <label>Telefone</label>
+            <input id="telefone" class="input" type="text" placeholder="(00) 00000-0000">
+        </div>
+
+        <div class="form-group">
+            <label>CNPJ (opcional)</label>
+            <input id="cnpj" class="input" type="text" placeholder="00.000.000/0000-00">
+        </div>
+
+        <div class="form-group">
+            <label>Tipo de Usuário</label>
+            <select id="role" class="input">
+                <option value="colaborador">Colaborador</option>
+                <option value="prestador">Prestador</option>
+            </select>
+        </div>
+
+        <button class="btn" onclick="criar()">Criar</button>
+
+        <p id="msg" style="margin-top:10px; font-weight:bold;"></p>
+    </div>
+
 </div>
 
 <script>
-fetch('/admin/sidebar_admin.html').then(r=>r.text()).then(h=>sidebar.innerHTML=h);
-function logout(){localStorage.clear();location="/";}
+// Carregar sidebar
+fetch("/admin/sidebar_admin.html")
+  .then(r => r.text())
+  .then(h => sidebar.innerHTML = h);
 
+// Função de criar colaborador
 async function criar(){
- let body={nome:nome.value,email:email.value,senha:senha.value,role:"colaborador"};
- let r=await fetch("/api/usuarios",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
- let j=await r.json();
- msg.innerText = j.error ? "Erro: "+j.error : "Criado!";
+    let nome = nome.value.trim();
+    let email = email.value.trim();
+    let senha = senha.value.trim();
+    let cnpj = cnpj.value.trim();
+    let telefone = telefone.value.trim();
+    let role = document.getElementById("role").value;
+
+    if(!nome || !email || !senha){
+        msg.innerText = "Preencha todos os campos obrigatórios!";
+        msg.style.color = "red";
+        return;
+    }
+
+    let dados = { nome, email, senha, role, cnpj, telefone };
+
+    let res = await fetch("/api/criar_colaborador", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dados)
+    });
+
+    if(res.ok){
+        msg.innerText = "Colaborador criado com sucesso!";
+        msg.style.color = "lightgreen";
+
+        nome.value = "";
+        email.value = "";
+        senha.value = "";
+        telefone.value = "";
+        cnpj.value = "";
+    } else {
+        msg.innerText = "Erro ao criar colaborador!";
+        msg.style.color = "red";
+    }
 }
 </script>
-</body></html>
+
+<style>
+.form-group {
+  margin-bottom: 15px;
+  color: white;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+</style>
+
+</body>
+</html>
