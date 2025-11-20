@@ -3,127 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>Painel Administrativo - CoelhoLog</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="sidebar_admin.css">
 
     <style>
         body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f3f5fa;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
+            background: #F3F6FC;
         }
 
-        /* SIDEBAR */
-        .sidebar {
-            width: 220px;
-            background: #06264d;
-            color: white;
-            padding-top: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar a {
-            color: #fff;
-            padding: 15px 20px;
-            text-decoration: none;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            font-size: 15px;
-        }
-
-        .sidebar a:hover {
-            background: #08386d;
-        }
-
-        /* ÁREA PRINCIPAL */
-        .main {
-            width: 100%;
-            overflow-y: auto;
-        }
-
-        /* TOPO COM LOGO */
         .topbar {
+            height: 70px;
+            background: white;
+            border-bottom: 1px solid #e2e2e2;
+            padding: 10px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: white;
-            padding: 10px 30px;
-            border-bottom: 1px solid #ddd;
         }
 
-        .topbar img {
+        .logo-area img {
             height: 45px;
         }
 
-        .logout {
-            background: #f2c200;
-            padding: 8px 20px;
-            border-radius: 6px;
-            font-weight: bold;
-            text-decoration: none;
-            color: black;
-        }
-
-        /* CARDS */
-        .card-container {
-            display: flex;
-            gap: 20px;
-            padding: 30px;
-        }
-
-        .card {
-            background: white;
-            padding: 20px;
+        .card-summary {
             border-radius: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            width: 25%;
-        }
-
-        .card-title {
-            font-size: 14px;
-            color: #555;
-        }
-
-        .card-value {
-            font-size: 22px;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-
-        /* TABELA */
-        .table-section {
-            margin: 20px 30px;
+            padding: 25px;
             background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .table thead th {
+            background: #eef1f5;
+            color: #0a1a33;
         }
 
-        thead {
-            background: #f2f2f2;
-        }
-
-        th {
-            padding: 12px;
-            text-align: left;
-            font-weight: bold;
-            color: #06264d;
-        }
-
-        td {
-            padding: 12px;
-            border-top: 1px solid #eee;
-            color: #06264d; /* <-- TEXTO AZUL */
+        .table tbody td {
+            color: #0a1a33;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -131,67 +49,136 @@
 <body>
 
     <!-- SIDEBAR -->
-    <div class="sidebar">
-        <a href="dashboard_admin.html"><i class="fa-solid fa-gauge"></i> Dashboard</a>
-        <a href="alterar_recebiveis.html"><i class="fa-solid fa-pen-to-square"></i> Alterar Recebíveis</a>
-        <a href="alterar_emprestimos.html"><i class="fa-solid fa-file-signature"></i> Alterar Empréstimos</a>
-        <a href="criar_colaborador.html"><i class="fa-solid fa-user-plus"></i> Criar Colaborador</a>
-        <a href="lancar_recebiveis.html"><i class="fa-solid fa-plus"></i> Lançar Recebível</a>
-        <a href="todos_emprestimos.html"><i class="fa-solid fa-list-check"></i> Todos Empréstimos</a>
-    </div>
+    <iframe src="sidebar_admin.html" style="width: 230px; height: 100vh; border: none; position: fixed;"></iframe>
 
-    <!-- ÁREA PRINCIPAL -->
-    <div class="main">
+    <!-- MAIN AREA -->
+    <div style="margin-left: 230px;">
 
-        <!-- TOPO -->
+        <!-- TOPBAR -->
         <div class="topbar">
-            <img src="/img/logo.png" alt="CoelhoLog">
-            <a href="#" class="logout">Logout</a>
+            <div class="logo-area">
+                <img src="/img/logo.png" alt="CoelhoLog">
+            </div>
+
+            <button class="btn btn-warning" onclick="logout()">Logout</button>
         </div>
 
-        <!-- CARDS -->
-        <div class="card-container">
-            <div class="card">
-                <div class="card-title">Recebíveis Pendentes</div>
-                <div id="pendentes" class="card-value">R$ 0,00</div>
+        <div class="container mt-4">
+
+            <h2 class="mb-4">Painel Administrativo</h2>
+
+            <div class="row g-4">
+
+                <!-- Recebíveis Pendentes -->
+                <div class="col-md-3">
+                    <div class="card-summary">
+                        <small>Recebíveis Pendentes</small>
+                        <h4 id="rec_pend">R$ 0,00</h4>
+                    </div>
+                </div>
+
+                <!-- Recebíveis Pagos -->
+                <div class="col-md-3">
+                    <div class="card-summary">
+                        <small>Recebíveis Pagos</small>
+                        <h4 id="rec_pago">R$ 0,00</h4>
+                    </div>
+                </div>
+
+                <!-- Empréstimos Pendentes -->
+                <div class="col-md-3">
+                    <div class="card-summary">
+                        <small>Empréstimos Pendentes</small>
+                        <h4 id="emp_pend">0</h4>
+                    </div>
+                </div>
+
+                <!-- Empréstimos Aprovados -->
+                <div class="col-md-3">
+                    <div class="card-summary">
+                        <small>Empréstimos Aprovados</small>
+                        <h4 id="emp_aprov">0</h4>
+                    </div>
+                </div>
+
             </div>
 
-            <div class="card">
-                <div class="card-title">Recebíveis Pagos</div>
-                <div id="pagos" class="card-value">R$ 0,00</div>
+            <!-- ULTIMOS RECEBÍVEIS -->
+            <div class="card mt-5 p-4 shadow-sm">
+                <h4>Últimos Recebíveis</h4>
+
+                <table class="table mt-3">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Usuário</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela_recebiveis">
+                    </tbody>
+                </table>
+
             </div>
 
-            <div class="card">
-                <div class="card-title">Empréstimos Pendentes</div>
-                <div id="emprestimosPendentes" class="card-value">0</div>
-            </div>
-
-            <div class="card">
-                <div class="card-title">Empréstimos Aprovados</div>
-                <div id="emprestimosAprovados" class="card-value">0</div>
-            </div>
         </div>
-
-        <!-- TABELA -->
-        <div class="table-section">
-            <h2>Últimos Recebíveis</h2>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Usuário</th>
-                        <th>Valor</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-recebiveis">
-                    <!-- preenchido pela API -->
-                </tbody>
-            </table>
-        </div>
-
     </div>
+
+<script>
+const API = "/api";
+
+// Logout
+function logout() {
+    localStorage.removeItem("admin");
+    window.location.href = "index.html";
+}
+
+// Carregar dashboard
+async function carregarDashboard() {
+    try {
+        // RECEBÍVEIS
+        const rec = await fetch(`${API}/recebiveis`).then(r => r.json());
+
+        let pendentes = rec.filter(r => r.status === "Pendente")
+                           .reduce((s, r) => s + Number(r.valor), 0);
+
+        let pagos = rec.filter(r => r.status === "Pago")
+                       .reduce((s, r) => s + Number(r.valor), 0);
+
+        document.getElementById("rec_pend").innerText = "R$ " + pendentes.toFixed(2);
+        document.getElementById("rec_pago").innerText = "R$ " + pagos.toFixed(2);
+
+        // TABELA ÚLTIMOS RECEBÍVEIS
+        const tabela = document.getElementById("tabela_recebiveis");
+        tabela.innerHTML = "";
+
+        rec.slice(0, 5).forEach(r => {
+            tabela.innerHTML += `
+                <tr>
+                    <td style="color:#0a1a33">${r.id}</td>
+                    <td style="color:#0a1a33">${r.nome}</td>
+                    <td style="color:#0a1a33">R$ ${r.valor}</td>
+                    <td>${r.status}</td>
+                </tr>`;
+        });
+
+        // EMPRÉSTIMOS
+        const emp = await fetch(`${API}/emprestimos`).then(r => r.json());
+
+        let pend = emp.filter(e => e.status === "Em análise").length;
+        let aprov = emp.filter(e => e.status === "Aprovado").length;
+
+        document.getElementById("emp_pend").innerText = pend;
+        document.getElementById("emp_aprov").innerText = aprov;
+
+    } catch (e) {
+        console.error("Erro carregando dashboard:", e);
+    }
+}
+
+carregarDashboard();
+</script>
 
 </body>
 </html>
