@@ -31,15 +31,16 @@ function fmt(n) {
 
 async function load() {
     let emp = await fetch('/api/emprestimos').then(r => r.json());
+
+    // Mostra somente os pendentes
     emp = emp.filter(e => e.status == "Em análise");
 
     let html = `
         <tr>
             <th>ID</th>
             <th>Usuário</th>
-            <th>Data</th>
             <th>Valor</th>
-            <th>Tipo</th>
+            <th>Parcelas</th>
             <th>Status</th>
             <th>Ação</th>
         </tr>
@@ -49,19 +50,14 @@ async function load() {
         html += `
             <tr>
                 <td>${e.id}</td>
-
                 <td>${e.nome}</td>
 
                 <td>
-                  <input type="date" class="input" id="data${e.id}" value="${e.data || ''}">
+                  <input type="number" step="0.01" class="input" id="valor${e.id}" value="${e.valor}">
                 </td>
 
                 <td>
-                  <input type="number" class="input" step="0.01" id="valor${e.id}" value="${e.valor || ''}">
-                </td>
-
-                <td>
-                  <input class="input" id="tipo${e.id}" value="${e.tipo || ''}">
+                  <input type="number" min="1" class="input" id="parc${e.id}" value="${e.parcelamentos}">
                 </td>
 
                 <td>
@@ -83,13 +79,22 @@ async function load() {
 }
 
 async function save(id) {
-    let data  = document.getElementById("data" + id).value;
     let valor = document.getElementById("valor" + id).value;
-    let tipo  = document.getElementById("tipo" + id).value;
-    let st    = document.getElementById("st" + id).value;
+    let parcelamentos = document.getElementById("parc" + id).value;
+    let status = document.getElementById("st" + id).value;
 
     await fetch("/api/emprestimos/" + id, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data, valor, tipo, status: st })
+        body: JSON.stringify({ valor, parcelamentos, status })
     });
+
+    alert("Atualizado com sucesso!");
+    load();
+}
+
+load();
+</script>
+
+</body>
+</html>
