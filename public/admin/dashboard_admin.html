@@ -1,184 +1,197 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Painel Administrativo</title>
-<link rel="stylesheet" href="/css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<style>
-    body {
-        margin: 0;
-        background: #f3f5f9;
-        font-family: Arial, sans-serif;
-    }
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f5fa;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-    /* HEADER */
-    .top-header {
-        width: 100%;
-        height: 70px;
-        background: #ffffff;
-        border-bottom: 1px solid #dcdcdc;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 25px;
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 2000;
-    }
-    .top-header img {
-        height: 42px;
-    }
-    .logout-btn {
-        background: #f3c400;
-        color: #000;
-        border: none;
-        padding: 10px 18px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: bold;
-    }
+        /* SIDEBAR */
+        .sidebar {
+            width: 220px;
+            background: #06264d;
+            color: white;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+        }
 
-    /* MAIN */
-    .main {
-        margin-left: 240px;
-        margin-top: 100px;
-        padding: 20px;
-    }
+        .sidebar a {
+            color: #fff;
+            padding: 15px 20px;
+            text-decoration: none;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 15px;
+        }
 
-    h1 {
-        font-size: 28px;
-        color: #062345;
-        margin-bottom: 25px;
-        font-weight: bold;
-    }
+        .sidebar a:hover {
+            background: #08386d;
+        }
 
-    /* CARDS */
-    .top-cards {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-        margin-bottom: 25px;
-    }
+        /* ÁREA PRINCIPAL */
+        .main {
+            width: 100%;
+            overflow-y: auto;
+        }
 
-    .top-card {
-        background: #ffffff;
-        padding: 20px;
-        border-radius: 14px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
+        /* TOPO COM LOGO */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 10px 30px;
+            border-bottom: 1px solid #ddd;
+        }
 
-    .top-card .small {
-        color: #666;
-        font-size: 14px;
-    }
+        .topbar img {
+            height: 45px;
+        }
 
-    .top-card h2 {
-        margin-top: 10px;
-        font-size: 26px;
-        color: #062345;
-    }
+        .logout {
+            background: #f2c200;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-decoration: none;
+            color: black;
+        }
 
-    .card {
-        background: #ffffff;
-        border-radius: 14px;
-        padding: 25px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
+        /* CARDS */
+        .card-container {
+            display: flex;
+            gap: 20px;
+            padding: 30px;
+        }
 
-    h3 {
-        color: #062345;
-        margin-bottom: 20px;
-        font-size: 22px;
-        font-weight: bold;
-    }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            width: 25%;
+        }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 15px;
-    }
+        .card-title {
+            font-size: 14px;
+            color: #555;
+        }
 
-    th {
-        background: #f0f0f0;
-        padding: 12px;
-        text-align: left;
-        color: #062345 !important;   /* Azul */
-        font-weight: bold !important;
-    }
+        .card-value {
+            font-size: 22px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
 
-    td {
-        padding: 10px;
-        border-bottom: 1px solid #eee;
-    }
-</style>
+        /* TABELA */
+        .table-section {
+            margin: 20px 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f2f2f2;
+        }
+
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            color: #06264d;
+        }
+
+        td {
+            padding: 12px;
+            border-top: 1px solid #eee;
+            color: #06264d; /* <-- TEXTO AZUL */
+        }
+    </style>
 </head>
 
 <body>
 
-<script>
-const uStr = localStorage.getItem("usuario");
-let u = null;
-try { u = uStr ? JSON.parse(uStr) : null; } catch(e){ u = null; }
-if (!u) {
-  window.location.href = "/";
-} else if (u.role !== "financeiro" && u.role !== "admin") {
-  window.location.href = "/colaborador/dashboard.html";
-}
-</script>
-
-<div class="top-header">
-    <img src="/img/logo.png" alt="CoelhoLog">
-    <button class="logout-btn" onclick="logout()">Logout</button>
-</div>
-
-<div id="sidebar"></div>
-
-<div class="main">
-    <h1>Painel Administrativo</h1>
-
-    <div class="top-cards">
-        <div class="top-card"><div class="small">Recebíveis Pendentes</div><h2 id="rpend"></h2></div>
-        <div class="top-card"><div class="small">Recebíveis Pagos</div><h2 id="rpago"></h2></div>
-        <div class="top-card"><div class="small">Empréstimos Pendentes</div><h2 id="epend"></h2></div>
-        <div class="top-card"><div class="small">Empréstimos Aprovados</div><h2 id="eaprov"></h2></div>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <a href="dashboard_admin.html"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+        <a href="alterar_recebiveis.html"><i class="fa-solid fa-pen-to-square"></i> Alterar Recebíveis</a>
+        <a href="alterar_emprestimos.html"><i class="fa-solid fa-file-signature"></i> Alterar Empréstimos</a>
+        <a href="criar_colaborador.html"><i class="fa-solid fa-user-plus"></i> Criar Colaborador</a>
+        <a href="lancar_recebiveis.html"><i class="fa-solid fa-plus"></i> Lançar Recebível</a>
+        <a href="todos_emprestimos.html"><i class="fa-solid fa-list-check"></i> Todos Empréstimos</a>
     </div>
 
-    <div class="card">
-        <h3>Últimos Recebíveis</h3>
-        <table id="receb"></table>
+    <!-- ÁREA PRINCIPAL -->
+    <div class="main">
+
+        <!-- TOPO -->
+        <div class="topbar">
+            <img src="/img/logo.png" alt="CoelhoLog">
+            <a href="#" class="logout">Logout</a>
+        </div>
+
+        <!-- CARDS -->
+        <div class="card-container">
+            <div class="card">
+                <div class="card-title">Recebíveis Pendentes</div>
+                <div id="pendentes" class="card-value">R$ 0,00</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Recebíveis Pagos</div>
+                <div id="pagos" class="card-value">R$ 0,00</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Empréstimos Pendentes</div>
+                <div id="emprestimosPendentes" class="card-value">0</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Empréstimos Aprovados</div>
+                <div id="emprestimosAprovados" class="card-value">0</div>
+            </div>
+        </div>
+
+        <!-- TABELA -->
+        <div class="table-section">
+            <h2>Últimos Recebíveis</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuário</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-recebiveis">
+                    <!-- preenchido pela API -->
+                </tbody>
+            </table>
+        </div>
+
     </div>
-</div>
-
-<script>
-fetch('/admin/sidebar_admin.html').then(r => r.text()).then(h => sidebar.innerHTML = h);
-
-function fmt(n){return "R$ "+Number(n||0).toLocaleString("pt-BR",{minimumFractionDigits:2});}
-function logout(){localStorage.clear();location="/";}
-
-async function load(){
-  let rec = await fetch("/api/recebiveis").then(r=>r.json());
-  let emp = await fetch("/api/emprestimos").then(r=>r.json());
-
-  let pendR = rec.filter(r=>r.status=="Pendente");
-  let pagoR = rec.filter(r=>r.status=="Pago");
-  let pendE = emp.filter(e=>e.status=="Em análise");
-  let aprE  = emp.filter(e=>e.status=="Aprovado");
-
-  rpend.innerText = fmt(pendR.reduce((t,x)=>t+Number(x.valor),0));
-  rpago.innerText = fmt(pagoR.reduce((t,x)=>t+Number(x.valor),0));
-  epend.innerText = pendE.length;
-  eaprov.innerText = aprE.length;
-
-  let html = "<tr><th>ID</th><th>Usuário</th><th>Valor</th><th>Status</th></tr>";
-  rec.slice(0,10).forEach(r=>{
-    html+=`<tr><td>${r.id}</td><td>${r.nome}</td><td>${fmt(r.valor)}</td><td>${r.status}</td></tr>`;
-  });
-  receb.innerHTML = html;
-}
-load();
-</script>
 
 </body>
 </html>
