@@ -49,4 +49,81 @@ if (!u || (u.role !== "financeiro" && u.role !== "admin")) {
 
       <div class="form-group">
         <label>CNPJ</label>
-        <input id="cnpj" class="input" type="text" placehold
+        <input id="cnpj" class="input" type="text" placeholder="00.000.000/0000-00">
+      </div>
+
+      <div class="form-group">
+        <label>Tipo de Usuário</label>
+        <select id="role" class="input">
+          <option value="colaborador">Colaborador</option>
+          <option value="prestador">Prestador</option>
+        </select>
+      </div>
+
+      <button class="btn" onclick="criar()" style="margin-top:15px;">Criar</button>
+
+      <p id="msg" style="margin-top:15px; font-weight:bold;"></p>
+
+  </div>
+</div>
+
+<script>
+// Carregar o menu lateral
+fetch("/admin/sidebar_admin.html")
+  .then(r => r.text())
+  .then(h => sidebar.innerHTML = h);
+
+// Função de criar colaborador
+async function criar() {
+  let nome = document.getElementById("nome").value.trim();
+  let email = document.getElementById("email").value.trim();
+  let senha = document.getElementById("senha").value.trim();
+  let telefone = document.getElementById("telefone").value.trim();
+  let cnpj = document.getElementById("cnpj").value.trim();
+  let role = document.getElementById("role").value;
+
+  if (!nome || !email || !senha) {
+    msg.innerText = "Preencha os campos obrigatórios!";
+    msg.style.color = "red";
+    return;
+  }
+
+  const dados = { nome, email, senha, role, cnpj, telefone };
+
+  const res = await fetch("/api/usuarios", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dados)
+  });
+
+  if (res.ok) {
+    msg.innerText = "Colaborador criado com sucesso!";
+    msg.style.color = "lightgreen";
+
+    // Limpar inputs
+    nome.value = "";
+    email.value = "";
+    senha.value = "";
+    telefone.value = "";
+    cnpj.value = "";
+
+  } else {
+    msg.innerText = "Erro ao criar colaborador!";
+    msg.style.color = "red";
+  }
+}
+</script>
+
+<style>
+.form-group {
+  margin-bottom: 15px;
+  color: white;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+</style>
+
+</body>
+</html>
