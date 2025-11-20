@@ -25,7 +25,7 @@
         position: fixed;
         top: 0;
         left: 0;
-        z-index: 10;
+        z-index: 2000;
     }
     .top-header img {
         height: 42px;
@@ -38,18 +38,6 @@
         border-radius: 6px;
         cursor: pointer;
         font-weight: bold;
-    }
-
-    /* SIDEBAR */
-    #sidebar {
-        position: fixed;
-        top: 70px;
-        left: 0;
-        width: 220px;
-        bottom: 0;
-        background: #062345;
-        color: #fff;
-        padding-top: 20px;
     }
 
     /* MAIN */
@@ -92,7 +80,6 @@
         color: #062345;
     }
 
-    /* CONTENT CARD */
     .card {
         background: #ffffff;
         border-radius: 14px;
@@ -101,14 +88,12 @@
     }
 
     h3 {
-        margin-top: 0;
         color: #062345;
         margin-bottom: 20px;
         font-size: 22px;
         font-weight: bold;
     }
 
-    /* TABLE */
     table {
         width: 100%;
         border-collapse: collapse;
@@ -119,8 +104,8 @@
         background: #f0f0f0;
         padding: 12px;
         text-align: left;
-        font-weight: bold;
-        border-bottom: 1px solid #ddd;
+        color: #062345 !important;   /* Azul */
+        font-weight: bold !important;
     }
 
     td {
@@ -143,16 +128,13 @@ if (!u) {
 }
 </script>
 
-<!-- HEADER NOVO -->
 <div class="top-header">
-    <img src="/img/logo.png">
+    <img src="/img/logo.png" alt="CoelhoLog">
     <button class="logout-btn" onclick="logout()">Logout</button>
 </div>
 
-<!-- SIDEBAR -->
 <div id="sidebar"></div>
 
-<!-- MAIN -->
 <div class="main">
     <h1>Painel Administrativo</h1>
 
@@ -170,7 +152,7 @@ if (!u) {
 </div>
 
 <script>
-fetch('/admin/sidebar_admin.html').then(r=>r.text()).then(h=>sidebar.innerHTML=h);
+fetch('/admin/sidebar_admin.html').then(r => r.text()).then(h => sidebar.innerHTML = h);
 
 function fmt(n){return "R$ "+Number(n||0).toLocaleString("pt-BR",{minimumFractionDigits:2});}
 function logout(){localStorage.clear();location="/";}
@@ -197,5 +179,6 @@ async function load(){
 }
 load();
 </script>
+
 </body>
 </html>
