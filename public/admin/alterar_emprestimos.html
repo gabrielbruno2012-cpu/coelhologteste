@@ -1,38 +1,95 @@
-
-<html><head>
+<html>
+<head>
 <link rel="stylesheet" href="/css/style.css">
-</head><body>
+</head>
+<body>
+
+<script>
+if (!localStorage.getItem("usuario")) location.href = "/";
+</script>
+
 <div id="sidebar"></div>
+
 <div class="main">
- <div class="header-right"><button class="btn" onclick="logout()">Logout"></button></div>
+ <div class="header-right">
+   <button class="btn" onclick="localStorage.clear();location='/'">Logout</button>
+ </div>
+
  <h1>Alterar Empréstimos</h1>
+
  <table class="table" id="lista"></table>
 </div>
 
 <script>
-fetch('/admin/sidebar_admin.html').then(r=>r.text()).then(h=>sidebar.innerHTML=h);
-function logout(){localStorage.clear();location="/";}
-async function load(){
- let emp = await fetch('/api/emprestimos').then(r=>r.json());
- emp = emp.filter(e=>e.status=="Em análise");
- let html="<tr><th>ID</th><th>Usuário</th><th>Valor</th><th>Status</th><th>Ação</th></tr>";
- emp.forEach(e=>{
-   html+=`<tr>
-     <td>${e.id}</td>
-     <td>${e.nome}</td>
-     <td>${e.valor}</td>
-     <td><select id="st${e.id}"><option>Em análise</option><option>Aprovado</option><option>Negado</option></select></td>
-     <td><button class="btn" onclick="save(${e.id})">Salvar</button></td>
-   </tr>`;
- });
- lista.innerHTML=html;
+fetch('/admin/sidebar_admin.html')
+    .then(r => r.text())
+    .then(h => sidebar.innerHTML = h);
+
+function fmt(n) {
+    return "R$ " + Number(n || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
 }
-async function save(id){
- let st=document.getElementById("st"+id).value;
- await fetch("/api/emprestimos/"+id,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:st})});
- alert("Atualizado!");
- load();
+
+async function load() {
+    let emp = await fetch('/api/emprestimos').then(r => r.json());
+    emp = emp.filter(e => e.status == "Em análise");
+
+    let html = `
+        <tr>
+            <th>ID</th>
+            <th>Usuário</th>
+            <th>Data</th>
+            <th>Valor</th>
+            <th>Tipo</th>
+            <th>Status</th>
+            <th>Ação</th>
+        </tr>
+    `;
+
+    emp.forEach(e => {
+        html += `
+            <tr>
+                <td>${e.id}</td>
+
+                <td>${e.nome}</td>
+
+                <td>
+                  <input type="date" class="input" id="data${e.id}" value="${e.data || ''}">
+                </td>
+
+                <td>
+                  <input type="number" class="input" step="0.01" id="valor${e.id}" value="${e.valor || ''}">
+                </td>
+
+                <td>
+                  <input class="input" id="tipo${e.id}" value="${e.tipo || ''}">
+                </td>
+
+                <td>
+                  <select id="st${e.id}" class="input">
+                    <option ${e.status == "Em análise" ? "selected" : ""}>Em análise</option>
+                    <option ${e.status == "Aprovado" ? "selected" : ""}>Aprovado</option>
+                    <option ${e.status == "Negado" ? "selected" : ""}>Negado</option>
+                  </select>
+                </td>
+
+                <td>
+                  <button class="btn" onclick="save(${e.id})">Salvar</button>
+                </td>
+            </tr>
+        `;
+    });
+
+    lista.innerHTML = html;
 }
-load();
-</script>
-</body></html>
+
+async function save(id) {
+    let data  = document.getElementById("data" + id).value;
+    let valor = document.getElementById("valor" + id).value;
+    let tipo  = document.getElementById("tipo" + id).value;
+    let st    = document.getElementById("st" + id).value;
+
+    await fetch("/api/emprestimos/" + id, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data, valor, tipo, status: st })
+    });
