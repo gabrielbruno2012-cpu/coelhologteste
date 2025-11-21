@@ -16,3 +16,32 @@ body{margin:0;background:linear-gradient(180deg,#021835,#062642);color:#fff;}
 .table th,.table td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.04);}
 .small{font-size:13px;color:#d6e6f5;}
 .header-right{display:flex;justify-content:flex-end;gap:10px;}
+/* SIDEBAR */
+.sidebar {
+    width: 220px;
+    background: #052041;
+    color: white;
+    padding-top: 20px;
+    position: fixed;
+    left: 0;
+    top: 65px;             /* abaixo do topbar */
+    height: calc(100vh - 65px); 
+    margin-top: 0; 
+    z-index: 2;
+}
+
+/* TOPBAR */
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 220px;
+    right: 0;
+    height: 65px;
+    background: #052f66;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 25px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000 !important;
+}
