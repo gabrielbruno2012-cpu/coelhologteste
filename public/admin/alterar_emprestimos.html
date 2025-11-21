@@ -1,9 +1,100 @@
 <html>
 <head>
     <link rel="stylesheet" href="/css/style.css">
+
+<style>
+    body {
+        margin: 0;
+        background: #062045;
+        font-family: "Inter", sans-serif;
+        color: white;
+    }
+
+    /* TOPBAR */
+    .topbar {
+        background: #062045;
+        padding: 15px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 3px solid #0a2c5d;
+    }
+
+    .topbar img {
+        height: 42px;
+    }
+
+    .logout-btn {
+        background: #ffcc00;
+        border: none;
+        padding: 10px 22px;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    /* MAIN */
+    .main {
+        margin-left: 250px;
+        padding: 40px;
+    }
+
+    h1 {
+        font-size: 26px;
+        color: white;
+        margin-bottom: 25px;
+    }
+
+    /* TABLE */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        color: #062045;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    th {
+        padding: 12px;
+        background: #062045;
+        color: white;
+        font-weight: 600;
+        text-align: left;
+    }
+
+    td {
+        padding: 12px;
+        background: #f5f7fc;
+        color: #002855;
+        font-weight: 600;
+    }
+
+    .input {
+        width: 140px;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid #8aa4d4;
+        color: #062045;
+        font-weight: 600;
+    }
+
+    .btn-save {
+        background: #062045;
+        color: white;
+        padding: 8px 14px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+    }
+</style>
 </head>
+
 <body>
+
 <script>
+// 🔒 PROTEÇÃO
 const uStr = localStorage.getItem("usuario");
 let u = null;
 try { u = uStr ? JSON.parse(uStr) : null; } catch(e){ u = null; }
@@ -15,79 +106,73 @@ if (!u) {
 }
 </script>
 
+<!-- TOPBAR -->
+<div class="topbar">
+    <img src="/img/logo.png">
+    <button class="logout-btn" onclick="localStorage.clear();location='/'">Logout</button>
+</div>
 
-<script>
-// Proteção de acesso
-if (!localStorage.getItem("usuario")) location.href = "/";
-</script>
-
+<!-- SIDEBAR -->
 <div id="sidebar"></div>
 
+<!-- CONTEÚDO -->
 <div class="main">
-    <div class="header-right">
-        <button class="btn" onclick="localStorage.clear();location='/'">Logout</button>
-    </div>
-
     <h1>Alterar Empréstimos</h1>
 
-    <table class="table" id="lista"></table>
+    <table id="lista"></table>
 </div>
 
 <script>
 // Carregar sidebar
 fetch('/admin/sidebar_admin.html')
     .then(r => r.text())
-    .then(h => sidebar.innerHTML = h);
+    .then(html => sidebar.innerHTML = html);
 
-// Formatação de moeda
-function fmt(n) {
-    return "R$ " + Number(n || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
-}
-
+/* 📌 LISTAR APENAS PENDENTES */
 async function load() {
-    let emp = await fetch('/api/emprestimos').then(r => r.json());
+    let dados = await fetch('/api/emprestimos').then(r => r.json());
 
-    // Mostrar somente empréstimos ainda em análise ou aprovados
-    emp = emp.filter(e => e.status == "Em análise" || e.status == "Aprovado");
+    // APENAS EMPRÉSTIMOS PENDENTES
+    dados = dados.filter(r => r.status === "Pendente");
 
     let html = `
         <tr>
             <th>ID</th>
             <th>Usuário</th>
             <th>Valor</th>
-            <th>Parcelas</th>
+            <th>Data</th>
             <th>Status</th>
             <th>Ação</th>
         </tr>
     `;
 
-    emp.forEach(e => {
+    dados.forEach(e => {
         html += `
             <tr id="row${e.id}">
-                <input type="hidden" id="row_uid${e.id}" value="${e.usuario_id}">
-
                 <td>${e.id}</td>
-                <td>${e.nome}</td>
 
-                <td>
-                    <input type="number" step="0.01" class="input" id="valor${e.id}" value="${e.valor}">
+                <td style="color:#409cff; font-weight:600">
+                    ${e.nome}
                 </td>
 
                 <td>
-                    <input type="number" min="1" class="input" id="parc${e.id}" value="${e.parcelamentos}">
+                    <input type="number" step="0.01" class="input" id="vl${e.id}" value="${e.valor}">
                 </td>
 
                 <td>
-                    <select id="st${e.id}" class="input">
-                        <option ${e.status == "Em análise" ? "selected" : ""}>Em análise</option>
-                        <option ${e.status == "Aprovado" ? "selected" : ""}>Aprovado</option>
-                        <option ${e.status == "Pago" ? "selected" : ""}>Pago</option>
-                        <option ${e.status == "Negado" ? "selected" : ""}>Negado</option>
+                    <input type="date" class="input" id="dt${e.id}" value="${e.data}">
+                </td>
+
+                <td>
+                    <select class="input" id="st${e.id}">
+                        <option value="Pendente" ${e.status=="Pendente"?"selected":""}>Pendente</option>
+                        <option value="Aprovado" ${e.status=="Aprovado"?"selected":""}>Aprovado</option>
+                        <option value="Pago">Pago</option>
                     </select>
                 </td>
 
                 <td>
-                    <button class="btn" onclick="save(${e.id})">Salvar</button>
+                    <button class="btn-save" onclick="save(${e.id})">Salvar</button>
                 </td>
             </tr>
         `;
@@ -96,55 +181,32 @@ async function load() {
     lista.innerHTML = html;
 }
 
+/* 📌 SALVAR E REMOVER DA TABELA QUANDO FICAR PAGO */
 async function save(id) {
-    let valor = document.getElementById("valor" + id).value;
-    let parcelamentos = document.getElementById("parc" + id).value;
-    let status = document.getElementById("st" + id).value;
-    let usuario_id = document.getElementById("row_uid" + id).value;
 
-    // Atualiza empréstimo
-    const res = await fetch("/api/emprestimos/" + id, {
+    let valor = document.getElementById("vl"+id).value;
+    let data  = document.getElementById("dt"+id).value;
+    let status = document.getElementById("st"+id).value;
+
+    await fetch("/api/emprestimos/" + id, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ valor, parcelamentos, status })
+        body: JSON.stringify({ valor, data, status })
     });
 
-    if (!res.ok) {
-        alert("Erro ao atualizar!");
+    // Se virar PAGO → some da tela
+    if(status === "Pago"){
+        document.getElementById("row"+id).remove();
         return;
     }
 
-    // 🔵 Status "Aprovado" → não some da tabela
-    if (status === "Aprovado") {
-        alert("Empréstimo aprovado!");
+    // Se virar APROVADO → também deve sumir
+    if(status === "Aprovado"){
+        document.getElementById("row"+id).remove();
         return;
     }
 
-    // 🔵 Status "Pago" → subir como recebível
-    if (status === "Pago") {
-
-        await fetch("/api/recebiveis", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                usuario_id: usuario_id,
-                valor: valor,
-                tipo: "Empréstimo",
-                status: "Pendente"
-            })
-        });
-
-        // Remove da tabela sem recarregar página
-        const tr = document.getElementById("row" + id);
-        if (tr) tr.remove();
-
-        alert("Empréstimo pago e lançado nos recebíveis!");
-    }
-
-    // Negado → apenas mantém e mostra mensagem
-    if (status === "Negado") {
-        alert("Empréstimo negado!");
-    }
+    alert("Empréstimo atualizado!");
 }
 
 load();
