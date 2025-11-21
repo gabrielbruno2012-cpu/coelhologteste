@@ -1,211 +1,159 @@
-<html>
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-    <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8">
+  <title>Alterar Recebíveis</title>
+  <link rel="stylesheet" href="/css/style.css">
 
-<style>
-    body {
-        margin: 0;
-        background: #062045;
-        font-family: "Inter", sans-serif;
-        color: white;
-    }
+  <style>
+    body { margin:0; background:#0A2347; font-family:'Inter', sans-serif; }
 
-    /* TOPBAR */
     .topbar {
-        background: #062045;
-        padding: 15px 30px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 3px solid #0a2c5d;
+      width:100%;
+      height:60px;
+      background:#072042;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 25px;
+      box-shadow:0 2px 4px rgba(0,0,0,0.2);
+      position:fixed;
+      top:0;
+      left:0;
+      z-index:10;
+    }
+    .topbar img { height:38px; }
+
+    .topbar button {
+      background:#FFCC00;
+      border:none;
+      padding:8px 18px;
+      border-radius:6px;
+      cursor:pointer;
+      font-weight:600;
     }
 
-    .topbar img {
-        height: 42px;
-    }
+    #sidebar { position:fixed; top:60px; left:0; width:200px; height:100%; }
 
-    .logout-btn {
-        background: #ffcc00;
-        border: none;
-        padding: 10px 22px;
-        border-radius: 8px;
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-    /* MAIN */
     .main {
-        margin-left: 250px;
-        padding: 40px;
+      margin-left:200px;
+      padding:90px 40px;
+      color:white;
     }
 
-    h1 {
-        font-size: 26px;
-        color: white;
-        margin-bottom: 25px;
+    .card {
+      background:white;
+      color:#000;
+      padding:20px;
+      border-radius:10px;
+      box-shadow:0 3px 10px rgba(0,0,0,0.2);
+      margin-top:20px;
     }
 
-    /* TABLE */
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-        color: #062045;
-        border-radius: 14px;
-        overflow: hidden;
-    }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:10px; border-bottom:1px solid #ccc; }
+    th { background:#0A2347; color:white; }
 
-    th {
-        padding: 12px;
-        background: #062045;
-        color: white;
-        font-weight: 600;
-        text-align: left;
-    }
-
-    td {
-        padding: 12px;
-        background: #f5f7fc;
-        color: #002855;
-        font-weight: 600;
-    }
-
-    .input {
-        width: 140px;
-        padding: 8px;
-        border-radius: 8px;
-        border: 1px solid #8aa4d4;
-        color: #062045;
-        font-weight: 600;
+    select, input {
+      width:100%;
+      padding:10px;
+      border-radius:6px;
+      border:1px solid #ccc;
     }
 
     .btn-save {
-        background: #062045;
-        color: white;
-        padding: 8px 14px;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        font-weight: 600;
+      background:#0A2347;
+      color:white;
+      padding:10px 14px;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
+      font-weight:600;
     }
-</style>
+
+    .txt-blue { color:#003C99; font-weight:600; }
+  </style>
 </head>
 
 <body>
 
 <script>
-// 🔒 PROTEÇÃO
-const uStr = localStorage.getItem("usuario");
-let u = null;
-try { u = uStr ? JSON.parse(uStr) : null; } catch(e){ u = null; }
-
-if (!u) {
-  window.location.href = "/";
-} else if (u.role !== "financeiro" && u.role !== "admin") {
-  window.location.href = "/colaborador/dashboard.html";
-}
+const uStr=localStorage.getItem("usuario");
+let u=null;
+try{ u=uStr?JSON.parse(uStr):null;}catch(e){u=null;}
+if(!u){location.href="/";}
+else if(u.role!=="financeiro" && u.role!=="admin"){location.href="/colaborador/dashboard.html";}
 </script>
 
-<!-- TOPBAR -->
 <div class="topbar">
-    <img src="/img/logo.png">
-    <button class="logout-btn" onclick="localStorage.clear();location='/'">Logout</button>
+  <img src="/img/logo.png">
+  <button onclick="localStorage.clear();location='/'">Logout</button>
 </div>
 
-<!-- SIDEBAR -->
 <div id="sidebar"></div>
 
-<!-- CONTEÚDO -->
 <div class="main">
-    <h1>Alterar Recebíveis</h1>
+  <h1>Alterar Recebíveis</h1>
 
-    <table id="lista"></table>
+  <div class="card">
+    <table id="tabela"></table>
+  </div>
 </div>
 
 <script>
-// Carregar sidebar
 fetch('/admin/sidebar_admin.html')
-    .then(r => r.text())
-    .then(h => sidebar.innerHTML = h);
+  .then(r=>r.text())
+  .then(h=>sidebar.innerHTML=h);
 
-/* 📌 LISTAR APENAS PENDENTES */
-async function load() {
-    let dados = await fetch('/api/recebiveis').then(r => r.json());
-
-    // APENAS RECEBÍVEIS PENDENTES
-    dados = dados.filter(r => r.status === "Pendente");
-
-    let html = `
-        <tr>
-            <th>ID</th>
-            <th>Usuário</th>
-            <th>Data</th>
-            <th>Valor</th>
-            <th>Tipo</th>
-            <th>Status</th>
-            <th>Ação</th>
-        </tr>
-    `;
-
-    dados.forEach(e => {
-        html += `
-            <tr id="row${e.id}">
-                <td>${e.id}</td>
-
-                <td style="color:#409cff; font-weight:600">
-                    ${e.nome}
-                </td>
-
-                <td>
-                    <input type="date" class="input" id="dt${e.id}" value="${e.data}">
-                </td>
-
-                <td>
-                    <input type="number" step="0.01" class="input" id="vl${e.id}" value="${e.valor}">
-                </td>
-
-                <td>
-                    <input type="text" class="input" id="tp${e.id}" value="${e.tipo}">
-                </td>
-
-                <td>
-                    <select class="input" id="st${e.id}">
-                        <option value="Pendente" ${e.status=="Pendente"?"selected":""}>Pendente</option>
-                        <option value="Pago">Pago</option>
-                    </select>
-                </td>
-
-                <td>
-                    <button class="btn-save" onclick="save(${e.id})">Salvar</button>
-                </td>
-            </tr>
-        `;
-    });
-
-    lista.innerHTML = html;
+function money(n){
+  return "R$ " + Number(n||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 }
 
-/* 📌 SALVAR E REMOVER DA TABELA QUANDO PAGO */
-async function save(id) {
+async function load(){
+  const dados = await fetch('/api/recebiveis').then(r=>r.json());
 
-    let data  = document.getElementById("dt"+id).value;
-    let valor = document.getElementById("vl"+id).value;
-    let tipo  = document.getElementById("tp"+id).value;
-    let status = document.getElementById("st"+id).value;
+  let html = `
+    <tr>
+      <th>ID</th>
+      <th>Usuário</th>
+      <th>Data</th>
+      <th>Valor</th>
+      <th>Tipo</th>
+      <th>Status</th>
+      <th>Ação</th>
+    </tr>
+  `;
 
-    await fetch("/api/recebiveis/" + id, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data, valor, tipo, status })
-    });
+  dados.forEach(e=>{
+    html += `
+      <tr>
+        <td>${e.id}</td>
+        <td class="txt-blue">${e.nome}</td>
+        <td class="txt-blue">${e.data || ""}</td>
+        <td class="txt-blue">${money(e.valor)}</td>
+        <td class="txt-blue">${e.tipo || "-"}</td>
+        <td>
+          <select id="st${e.id}">
+             <option value="Pendente" ${e.status=="Pendente"?"selected":""}>Pendente</option>
+             <option value="Pago" ${e.status=="Pago"?"selected":""}>Pago</option>
+          </select>
+        </td>
+        <td><button class="btn-save" onclick="salvar(${e.id})">Salvar</button></td>
+      </tr>
+    `;
+  });
 
-    // Se virar PAGO → some da lista
-    if(status === "Pago"){
-        document.getElementById("row"+id).remove();
-        return;
-    }
+  tabela.innerHTML = html;
+}
 
-    alert("Recebível atualizado!");
+async function salvar(id){
+  let st = document.getElementById("st"+id).value;
+  await fetch("/api/recebiveis/"+id,{
+    method:"PUT",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ status:st })
+  });
+  load();
 }
 
 load();
