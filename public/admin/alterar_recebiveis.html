@@ -1,96 +1,87 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alterar Recebíveis - CoelhoLog</title>
-    <link rel="stylesheet" href="/admin/style_admin.css">
+<link rel="stylesheet" href="/css/style.css">
 
-    <style>
-        .form-container {
-            background: #fff;
-            padding: 25px;
-            border-radius: 12px;
-            width: 520px;
-            margin: 40px auto;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
+<style>
+    /* CARD PADRÃO */
+    .card-wrapper {
+        max-width: 900px;
+        background: #fff;
+        padding: 30px;
+        border-radius: 16px;
+        margin: 40px auto;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
 
-        label {
-            font-weight: 600;
-            margin-top: 12px;
-            display: block;
-        }
+    h1 {
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 25px;
+        color: #0A2342;
+    }
 
-        select, input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #dcdcdc;
-            margin-top: 5px;
-        }
+    .table th {
+        background: #0A2342;
+        color: white;
+        padding: 10px;
+        text-align: left;
+    }
 
-        .btn-salvar {
-            background: #062d57;
-            color: #fff;
-            padding: 14px;
-            margin-top: 18px;
-            width: 100%;
-            font-size: 15px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
+    .table td {
+        background: #f9f9f9;
+        padding: 10px;
+    }
 
-        .btn-salvar:hover {
-            opacity: .85;
-        }
-    </style>
+    .input {
+        width: 100%;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+
+    .btn-save {
+        background: #0A2342;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        border: none;
+    }
+
+    /* Topbar coerente com o restante */
+    .topbar {
+        width: 100%;
+        height: 60px;
+        background: #0A2342;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 25px;
+    }
+
+    .topbar img {
+        height: 42px;
+    }
+
+    .logout-btn {
+        background: #FFC400;
+        border: none;
+        padding: 7px 18px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .main {
+        margin-left: 260px;
+        padding: 20px;
+    }
+</style>
+
 </head>
-
 <body>
 
-    <!-- SIDEBAR -->
-    <div id="sidebar"></div>
-
-    <!-- TOPO -->
-    <header class="topbar">
-        <img src="/img/logo.png" class="logo-topbar">
-        <button class="logout-btn" onclick="logout()">Logout</button>
-    </header>
-
-    <!-- CONTEÚDO -->
-    <main class="content">
-        <h2>Alterar Recebíveis</h2>
-
-        <div class="form-container">
-            
-            <label>Colaborador</label>
-            <select id="usuario_id"></select>
-
-            <label>Nome</label>
-            <input type="text" id="nome">
-
-            <label>Valor</label>
-            <input type="number" id="valor" step="0.01">
-
-            <label>Data</label>
-            <input type="date" id="data">
-
-            <label>Status</label>
-            <select id="status">
-                <option value="Pendente">Pendente</option>
-                <option value="Pago">Pago</option>
-            </select>
-
-            <button class="btn-salvar" onclick="salvar()">Salvar Alterações</button>
-        </div>
-    </main>
-
 <script>
-/* ==============================
-   🔒 PROTEÇÃO DE ACESSO 
-=================================*/
 const uStr = localStorage.getItem("usuario");
 let u = null;
 try { u = uStr ? JSON.parse(uStr) : null; } catch(e){ u = null; }
@@ -100,83 +91,95 @@ if (!u) {
 } else if (u.role !== "financeiro" && u.role !== "admin") {
   window.location.href = "/colaborador/dashboard.html";
 }
+</script>
 
+<!-- 🔵 TOPBAR AZUL COM LOGO -->
+<div class="topbar">
+    <img src="/img/logo.png">
+    <button class="logout-btn" onclick="logout()">Logout</button>
+</div>
 
-/* ==============================
-   📌 CARREGAR SIDEBAR
-=================================*/
-fetch("/admin/sidebar_admin.html").then(r => r.text()).then(html => {
-    document.getElementById("sidebar").innerHTML = html;
-});
+<!-- SIDEBAR -->
+<div id="sidebar"></div>
 
+<!-- CONTEÚDO -->
+<div class="main">
 
-/* ==============================
-   📌 BUSCAR RECEBÍVEL PARA EDITAR
-=================================*/
-const params = new URLSearchParams(window.location.search);
-const id = params.get("id");
+    <div class="card-wrapper">
+        <h1>Alterar Recebíveis</h1>
 
-async function carregarRecebivel() {
-    const resp = await fetch(`/api/recebiveis/${id}`);
-    const r = await resp.json();
+        <table class="table" id="lista"></table>
+    </div>
 
-    document.getElementById("nome").value = r.nome;
-    document.getElementById("valor").value = r.valor;
-    document.getElementById("data").value = r.data;
-    document.getElementById("status").value = r.status;
-    document.getElementById("usuario_id").value = r.usuario_id;
+</div>
+
+<script>
+fetch('/admin/sidebar_admin.html').then(r=>r.text()).then(h=>sidebar.innerHTML=h);
+function logout(){localStorage.clear();location="/";}
+function fmt(n){return "R$ "+Number(n||0).toLocaleString("pt-BR",{minimumFractionDigits:2});}
+
+async function load(){
+ let rec = await fetch('/api/recebiveis').then(r=>r.json());
+ rec = rec.filter(r=>r.status=="Pendente");
+
+ let html = `
+   <tr>
+     <th>ID</th>
+     <th>Usuário</th>
+     <th>Data</th>
+     <th>Valor</th>
+     <th>Tipo</th>
+     <th>Status</th>
+     <th>Ação</th>
+   </tr>
+ `;
+
+ rec.forEach(r=>{
+   html += `
+     <tr>
+       <td>${r.id}</td>
+       <td>${r.nome}</td>
+
+       <td><input type="date" class="input" id="data${r.id}" value="${r.data || ''}"></td>
+
+       <td><input type="number" class="input" step="0.01" id="valor${r.id}" value="${r.valor || ''}"></td>
+
+       <td><input class="input" id="tipo${r.id}" value="${r.tipo || ''}"></td>
+
+       <td>
+         <select id="s${r.id}" class="input">
+           <option ${r.status=='Pendente'?'selected':''}>Pendente</option>
+           <option ${r.status=='Pago'?'selected':''}>Pago</option>
+         </select>
+       </td>
+
+       <td>
+         <button class="btn-save" onclick="save(${r.id})">Salvar</button>
+       </td>
+     </tr>
+   `;
+ });
+
+ lista.innerHTML = html;
 }
 
+async function save(id){
+ let data  = document.getElementById("data"+id).value;
+ let valor = document.getElementById("valor"+id).value;
+ let tipo  = document.getElementById("tipo"+id).value;
+ let st    = document.getElementById("s"+id).value;
 
-/* ==============================
-   📌 CARREGAR LISTA DE COLABORADORES
-=================================*/
-async function carregarUsuarios() {
-    const resp = await fetch("/api/usuarios");
-    const lista = await resp.json();
+ await fetch("/api/recebiveis/"+id,{
+   method:"PUT",
+   headers:{"Content-Type":"application/json"},
+   body: JSON.stringify({ data, valor, tipo, status: st })
+ });
 
-    let sel = document.getElementById("usuario_id");
-
-    lista.forEach(u => {
-        if (u.role === "colaborador") {
-            let opt = document.createElement("option");
-            opt.value = u.id;
-            opt.textContent = u.nome;
-            sel.appendChild(opt);
-        }
-    });
-
-    carregarRecebivel();
+ alert("Atualizado!");
+ load();
 }
 
-
-/* ==============================
-   💾 SALVAR ALTERAÇÕES
-=================================*/
-async function salvar() {
-    const dados = {
-        usuario_id: document.getElementById("usuario_id").value,
-        nome: document.getElementById("nome").value,
-        valor: document.getElementById("valor").value,
-        data: document.getElementById("data").value,
-        status: document.getElementById("status").value
-    };
-
-    const resp = await fetch(`/api/recebiveis/${id}`, {
-        method: "PUT",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(dados)
-    });
-
-    if (resp.ok) {
-        alert("Alterado com sucesso!");
-        window.location.href = "/admin/dashboard_admin.html";
-    } else {
-        alert("Erro ao salvar");
-    }
-}
-
-carregarUsuarios();
+load();
 </script>
 
 </body>
