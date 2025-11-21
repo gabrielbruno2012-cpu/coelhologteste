@@ -8,7 +8,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "../public")));
 
-const DB = process.env.DB_PATH || "./database.sqlite";
+const DB = path.join(__dirname,'sql','coelholog.db');
 const db = new sqlite3.Database(DB);
 
 // ======================================================
