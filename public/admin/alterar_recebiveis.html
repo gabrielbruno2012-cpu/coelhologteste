@@ -1,97 +1,249 @@
-<html>
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-<link rel="stylesheet" href="/css/style.css">
+<meta charset="UTF-8">
+<title>Alterar Recebíveis - CoelhoLog</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+  :root {
+    --azul-topbar: #062243;
+    --azul-sidebar: #04152b;
+    --amarelo: #ffc81a;
+    --cinza-fundo: #f5f7fb;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Arial, sans-serif;
+    background: var(--cinza-fundo);
+    color: #0b2145;
+  }
+
+  /* TOPBAR */
+  .topbar {
+    position: sticky;
+    top: 0;
+    height: 64px;
+    background: var(--azul-topbar);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    z-index: 1000;
+  }
+
+  .topbar-logo {
+    height: 38px;
+  }
+
+  .btn-logout {
+    background: var(--amarelo);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  /* LAYOUT */
+  .layout {
+    display: flex;
+    min-height: calc(100vh - 64px);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 230px;
+    background: var(--azul-sidebar);
+    padding: 24px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    color: white;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    font-size: 15px;
+    color: #dbe4ff;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: 0.2s;
+  }
+
+  .nav-link:hover {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+  }
+
+  .icon {
+    font-size: 18px;
+  }
+
+  .main-content {
+    flex: 1;
+    padding: 32px;
+  }
+
+  h1 {
+    margin-bottom: 16px;
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  /* FORMULARIO */
+  .box {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    max-width: 600px;
+  }
+
+  label {
+    font-weight: bold;
+    margin-top: 14px;
+    display: block;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 6px;
+    border-radius: 8px;
+    border: 1px solid #c7cdda;
+    font-size: 15px;
+  }
+
+  button {
+    margin-top: 22px;
+    background: var(--azul-topbar);
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    width: 100%;
+  }
+
+  button:hover {
+    background: #071d38;
+  }
+
+</style>
 </head>
 <body>
-<script>
-const uStr = localStorage.getItem("usuario");
-let u = null;
-try { u = uStr ? JSON.parse(uStr) : null; } catch(e){ u = null; }
 
-if (!u) {
-  window.location.href = "/";
-} else if (u.role !== "financeiro" && u.role !== "admin") {
-  window.location.href = "/colaborador/dashboard.html";
-}
-</script>
+<!-- TOPBAR -->
+<header class="topbar">
+  <img src="/img/logo.png" class="topbar-logo">
+  <button class="btn-logout" onclick="logout()">Logout</button>
+</header>
 
+<div class="layout">
 
-<div id="sidebar"></div>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <a class="nav-link" href="/admin/dashboard_admin.html"><span class="icon">📊</span>Dashboard</a>
+    <a class="nav-link" href="/admin/alterar_recebiveis.html"><span class="icon">✏️</span>Alterar Recebíveis</a>
+    <a class="nav-link" href="/admin/alterar_emprestimos.html"><span class="icon">💳</span>Alterar Empréstimos</a>
+    <a class="nav-link" href="/admin/criar_colaborador.html"><span class="icon">👤</span>Criar Colaborador</a>
+    <a class="nav-link" href="/admin/lancar_recebiveis.html"><span class="icon">➕</span>Lançar Recebível</a>
+    <a class="nav-link" href="/admin/todos_emprestimos.html"><span class="icon">📚</span>Todos Empréstimos</a>
+  </aside>
 
-<div class="main">
- <div class="header-right"><button class="btn" onclick="logout()">Logout</button></div>
- <h1>Alterar Recebíveis</h1>
+  <!-- CONTEÚDO -->
+  <main class="main-content">
+    <h1>Alterar Recebíveis</h1>
 
- <table class="table" id="lista"></table>
+    <div class="box">
+
+      <label>ID</label>
+      <input id="id" readonly>
+
+      <label>Nome</label>
+      <input id="nome" readonly>
+
+      <label>Valor</label>
+      <input id="valor" type="number">
+
+      <label>Data</label>
+      <input id="data" type="date">
+
+      <label>Status</label>
+      <select id="status">
+        <option value="Pendente">Pendente</option>
+        <option value="Pago">Pago</option>
+      </select>
+
+      <button onclick="salvar()">Salvar Alterações</button>
+    </div>
+  </main>
+
 </div>
 
 <script>
-fetch('/admin/sidebar_admin.html').then(r=>r.text()).then(h=>sidebar.innerHTML=h);
-function logout(){localStorage.clear();location="/";}
-function fmt(n){return "R$ "+Number(n||0).toLocaleString("pt-BR",{minimumFractionDigits:2});}
+/* PROTEÇÃO */
+const uStr = localStorage.getItem("usuario");
+let u = null;
+try{ u = uStr ? JSON.parse(uStr) : null; }catch(e){ u = null; }
 
-async function load(){
- let rec = await fetch('/api/recebiveis').then(r=>r.json());
- rec = rec.filter(r=>r.status=="Pendente");
-
- let html = `
-   <tr>
-     <th>ID</th>
-     <th>Usuário</th>
-     <th>Data</th>
-     <th>Valor</th>
-     <th>Tipo</th>
-     <th>Status</th>
-     <th>Ação</th>
-   </tr>
- `;
-
- rec.forEach(r=>{
-   html += `
-     <tr>
-       <td>${r.id}</td>
-       <td>${r.nome}</td>
-
-       <td><input type="date" class="input" id="data${r.id}" value="${r.data || ''}"></td>
-
-       <td><input type="number" class="input" step="0.01" id="valor${r.id}" value="${r.valor || ''}"></td>
-
-       <td><input class="input" id="tipo${r.id}" value="${r.tipo || ''}"></td>
-
-       <td>
-         <select id="s${r.id}" class="input">
-           <option ${r.status=='Pendente'?'selected':''}>Pendente</option>
-           <option ${r.status=='Pago'?'selected':''}>Pago</option>
-         </select>
-       </td>
-
-       <td>
-         <button class="btn" onclick="save(${r.id})">Salvar</button>
-       </td>
-     </tr>
-   `;
- });
-
- lista.innerHTML = html;
+if(!u){
+  window.location.href="/";
+}else if(u.role!=="financeiro" && u.role!=="admin"){
+  window.location.href="/colaborador/dashboard.html";
 }
 
-async function save(id){
- let data  = document.getElementById("data"+id).value;
- let valor = document.getElementById("valor"+id).value;
- let tipo  = document.getElementById("tipo"+id).value;
- let st    = document.getElementById("s"+id).value;
-
- await fetch("/api/recebiveis/"+id,{
-   method:"PUT",
-   headers:{"Content-Type":"application/json"},
-   body: JSON.stringify({ data, valor, tipo, status: st })
- });
-
- alert("Atualizado!");
- load();
+/* LOGOUT */
+function logout(){
+  localStorage.clear();
+  window.location.href="/";
 }
 
-load();
+/* CARREGAR DADOS NA PÁGINA */
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+async function carregar(){
+  const r = await fetch("/api/recebiveis/" + id);
+  const dados = await r.json();
+
+  document.getElementById("id").value = dados.id;
+  document.getElementById("nome").value = dados.nome;
+  document.getElementById("valor").value = dados.valor;
+
+  if(dados.data){
+    document.getElementById("data").value = dados.data.split(" ")[0];
+  }
+
+  document.getElementById("status").value = dados.status;
+}
+
+/* SALVAR */
+async function salvar(){
+  const body = {
+    valor: document.getElementById("valor").value,
+    data: document.getElementById("data").value,
+    status: document.getElementById("status").value
+  };
+
+  await fetch("/api/recebiveis/" + id, {
+    method:"PUT",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(body)
+  });
+
+  alert("Recebível atualizado com sucesso!");
+}
+
+carregar();
 </script>
 
 </body>
