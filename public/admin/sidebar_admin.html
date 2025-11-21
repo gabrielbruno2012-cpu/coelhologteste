@@ -1,12 +1,69 @@
+<style>
+  .sidebar {
+    position: fixed;
+    top: 70px;                 /* começa logo abaixo da topbar */
+    left: 0;
+    width: 220px;
+    height: calc(100vh - 70px);
+    background: #021c3a;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    padding-top: 20px;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.2);
+    z-index: 90;
+  }
+
+  .sidebar .menu {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0 12px;
+  }
+
+  .sidebar .menu a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.15s, padding-left 0.15s;
+  }
+
+  .sidebar .menu a span.icon {
+    font-size: 16px;
+  }
+
+  .sidebar .menu a:hover,
+  .sidebar .menu a.active {
+    background: #07386d;
+    padding-left: 16px;
+  }
+</style>
 
 <div class="sidebar">
-  <div class="logo">CoelhoLog Admin</div>
-  <div class="menu">
-    <a href="/admin/dashboard_admin.html">📊 Dashboard</a>
-    <a href="/admin/alterar_recebiveis.html">💰 Alterar Recebíveis</a>
-    <a href="/admin/alterar_emprestimos.html">📄 Alterar Empréstimos</a>
-    <a href="/admin/criar_colaborador.html">👤 Criar Colaborador</a>
-    <a href="/admin/lancar_recebiveis.html">➕ Lançar Recebível</a>
-    <a href="/admin/todos_emprestimos.html">📚 Todos Empréstimos</a>
-  </div>
+  <nav class="menu">
+    <a href="/admin/dashboard_admin.html">
+      <span class="icon">📊</span> <span>Dashboard</span>
+    </a>
+    <a href="/admin/alterar_recebiveis.html">
+      <span class="icon">💰</span> <span>Alterar Recebíveis</span>
+    </a>
+    <a href="/admin/alterar_emprestimos.html">
+      <span class="icon">📝</span> <span>Alterar Empréstimos</span>
+    </a>
+    <a href="/admin/criar_colaborador.html">
+      <span class="icon">👤</span> <span>Criar Colaborador</span>
+    </a>
+    <a href="/admin/lancar_recebiveis.html">
+      <span class="icon">➕</span> <span>Lançar Recebível</span>
+    </a>
+    <a href="/admin/todos_emprestimos.html">
+      <span class="icon">📚</span> <span>Todos Empréstimos</span>
+    </a>
+  </nav>
 </div>
