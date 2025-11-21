@@ -1,69 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sidebar Admin</title>
+
 <style>
-  .sidebar {
-    position: fixed;
-    top: 70px;                 /* começa logo abaixo da topbar */
-    left: 0;
-    width: 220px;
-    height: calc(100vh - 70px);
-    background: #021c3a;
-    color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    padding-top: 20px;
-    box-shadow: 2px 0 4px rgba(0,0,0,0.2);
-    z-index: 90;
-  }
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+    }
 
-  .sidebar .menu {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 0 12px;
-  }
+    .sidebar {
+        width: 240px;
+        height: 100vh;
+        background: #062447; /* Azul CoelhoLog */
+        color: #fff;
+        padding-top: 30px;
+        position: fixed;
+        left: 0;
+        top: 0;
+        box-shadow: 4px 0 10px rgba(0,0,0,0.2);
+    }
 
-  .sidebar .menu a {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 6px;
-    color: #ffffff;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    transition: background 0.15s, padding-left 0.15s;
-  }
+    .menu-item {
+        padding: 14px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
 
-  .sidebar .menu a span.icon {
-    font-size: 16px;
-  }
+    .menu-item:hover {
+        background: #0A3A73;
+    }
 
-  .sidebar .menu a:hover,
-  .sidebar .menu a.active {
-    background: #07386d;
-    padding-left: 16px;
-  }
+    .icon {
+        font-size: 20px;
+        width: 24px;
+        display: flex;
+        justify-content: center;
+    }
+
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
 </style>
+</head>
+
+<body>
 
 <div class="sidebar">
-  <nav class="menu">
-    <a href="/admin/dashboard_admin.html">
-      <span class="icon">📊</span> <span>Dashboard</span>
+
+    <a href="dashboard_admin.html">
+        <div class="menu-item">
+            <div class="icon">📊</div>
+            <span>Dashboard</span>
+        </div>
     </a>
-    <a href="/admin/alterar_recebiveis.html">
-      <span class="icon">💰</span> <span>Alterar Recebíveis</span>
+
+    <a href="alterar_recebiveis.html">
+        <div class="menu-item">
+            <div class="icon">💰</div>
+            <span>Alterar Recebíveis</span>
+        </div>
     </a>
-    <a href="/admin/alterar_emprestimos.html">
-      <span class="icon">📝</span> <span>Alterar Empréstimos</span>
+
+    <a href="alterar_emprestimos.html">
+        <div class="menu-item">
+            <div class="icon">💳</div>
+            <span>Alterar Empréstimos</span>
+        </div>
     </a>
-    <a href="/admin/criar_colaborador.html">
-      <span class="icon">👤</span> <span>Criar Colaborador</span>
+
+    <a href="criar_colaborador.html">
+        <div class="menu-item">
+            <div class="icon">👤</div>
+            <span>Criar Colaborador</span>
+        </div>
     </a>
-    <a href="/admin/lancar_recebiveis.html">
-      <span class="icon">➕</span> <span>Lançar Recebível</span>
+
+    <a href="lancar_recebiveis.html">
+        <div class="menu-item">
+            <div class="icon">➕</div>
+            <span>Lançar Recebível</span>
+        </div>
     </a>
-    <a href="/admin/todos_emprestimos.html">
-      <span class="icon">📚</span> <span>Todos Empréstimos</span>
+
+    <a href="todos_emprestimos.html">
+        <div class="menu-item">
+            <div class="icon">📋</div>
+            <span>Todos Empréstimos</span>
+        </div>
     </a>
-  </nav>
+
 </div>
+
+</body>
+</html>
